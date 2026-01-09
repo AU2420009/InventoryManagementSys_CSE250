@@ -1,2 +1,3 @@
 # CSE250_Project
-Inventory management system (project for CSE250 Database Management Systems)
+Inventory management system with MariaDB and JS.
+This is a project for CSE250 Database Management Systems.
