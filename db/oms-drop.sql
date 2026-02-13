@@ -1,4 +1,4 @@
-DROP TABLE Product;
-DROP TABLE Customer;
-DROP TABLE Orders;
-DROP TABLE Order_Item;
+DROP TABLE products;
+DROP TABLE customers;
+DROP TABLE orders;
+DROP TABLE order_items;
