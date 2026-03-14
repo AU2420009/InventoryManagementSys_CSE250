@@ -1,4 +1,6 @@
-DROP TABLE products;
-DROP TABLE customers;
-DROP TABLE orders;
-DROP TABLE order_items;
+-- drop child tables first to prevent foreign key errors
+
+DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS products;
