@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import db from "./db.js";
+import productRoutes from "./routes/products.js";
 
 dotenv.config();
 
@@ -14,16 +15,8 @@ app.get("/", (req, res) => {
   res.send("Backend is running");
 });
 
-// first API route - get all products
-app.get("/products", async (req, res) => {
-  try {
-    const [rows] = await db.query("SELECT * FROM products");
-    res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error fetching products");
-  }
-});
+// middleware for API endpoint - products
+app.use("/products", productRoutes);
 
 const PORT = 5000;
 
