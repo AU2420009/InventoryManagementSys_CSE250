@@ -3,6 +3,8 @@ import express from "express";
 import cors from "cors";
 import db from "./db.js";
 import productRoutes from "./routes/products.js";
+import orderRoutes from "./routes/orders.js";
+import customerRoutes from "./routes/customers.js";
 
 dotenv.config();
 
@@ -17,6 +19,12 @@ app.get("/", (req, res) => {
 
 // middleware for API endpoint - products
 app.use("/products", productRoutes);
+
+// middleware for API endpoint - orders
+app.use("/orders", orderRoutes);
+
+// middleware for API endpoint - customers
+app.use("/customers", customerRoutes);
 
 const PORT = 5000;
 
