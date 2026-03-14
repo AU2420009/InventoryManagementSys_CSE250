@@ -51,7 +51,36 @@ The database consists of the following main entities:
 
 A composite primary key is used in the **Order-Item** table to ensure unique combinations of Order-ID and Product-ID.
 
-Detailed database schema and design decisions are documented in the project wiki.
+
+
+
+## 5. Project Documentation
+
+Detailed documentation is available in the **GitHub Wiki**:
+
+https://github.com/AU2420009/InventoryManagementSys_CSE250/wiki
+
+The wiki includes:
+
+- System Architecture
+- Database Design
+- API Design
+- Deployment Guide
+- Installation Instructions
+
+
+
+## 6. Team
+
+Developed as part of the **CSE250 Database Management Systems Course** at Ahmedabad University.
+
+Team Members:
+
+- Anant Narayan
+- Ankit Kumar
+- Milan Shah
+
+
 
 
 
