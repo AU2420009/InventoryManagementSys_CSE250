@@ -1,160 +1,284 @@
-body { margin: 0; font-family: Arial, sans-serif; }
-.wrapper { display: flex; height: 100vh; }
+/* ======== BASE & RESET ======== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
-/* ======== LEFT PANEL (Unchanged) ======== */
+body {
+    height: 100vh;
+    background-color: #1a1a24; /* Dark background matching screenshot */
+    color: #ffffff;
+    overflow: hidden;
+}
+
+.wrapper {
+    display: flex;
+    height: 100vh;
+}
+
+/* ======== LEFT PANEL ======== */
 .left-panel {
-  width: 50%;
-  background: url("side-image.jpg") center/cover no-repeat;
-  position: relative;
-  color: #fff;
+    flex: 1;
+    background: url('side-image.jpg') center/cover no-repeat; /* Update with your actual image */
+    position: relative;
+    display: none; /* Hide on mobile */
 }
-.left-panel::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,.5);
+
+@media (min-width: 768px) {
+    .left-panel {
+        display: block;
+    }
 }
+
+.left-panel /* Updated Overlay to Center Text */
 .overlay {
   position: absolute;
   bottom: 40px;
-  left: 40px;
-  max-width: 70%;
+  width: 100%;
+  text-align: center;
+  padding: 0 20px;
+  box-sizing: border-box;
 }
 .overlay h1 { font-size: 32px; margin-bottom: 10px; }
 .overlay p { font-size: 14px; opacity: .8; }
 
-/* ======== RIGHT PANEL (Updated to Zoho Light Theme) ======== */
+.left-panel h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: white;
+}
+
+/* ======== RIGHT PANEL (Form Area) ======== */
 .right-panel {
-  width: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #ffffff; /* Clean white background */
-  color: #111827; /* Dark gray/black text */
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #1e1e2d; /* Slight contrast from body */
 }
 
 .form-box {
-  width: 320px;
-  padding: 25px;
-  /* Removed the transparent blurry box to make it flush with the background */
+    background-color: #242435; /* Card background */
+    padding: 40px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
-.form-box h2 { 
-  margin-bottom: 5px; 
-  font-size: 24px;
-}
-.form-box p { 
-  margin-bottom: 20px; 
-  font-size: 14px; 
-  color: #64748b; /* Lighter gray for the subtitle */
-}
-
-/* ======== FORM ELEMENTS ======== */
-form { display: flex; flex-direction: column; }
-
-input {
-  margin-bottom: 15px;
-  padding: 12px 10px 12px 40px; /* Slightly taller inputs, room for icons */
-  border-radius: 6px;
-  border: 1px solid #d1d5db; /* Light gray border */
-  outline: none;
-  color: #333; /* Dark text when user types */
-  background-color: #fff; /* White background inside input */
-  
-  /* Icon settings */
-  background-repeat: no-repeat;
-  background-position: 10px center; 
-  background-size: 20px; 
-}
-input:focus {
-  border-color: #f84f4f; /* Changes border to red when clicking the box */
+.auth-logo {
+    display: block;
+    margin: 0 auto 20px;
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    border-radius: 8px;
 }
 
-/* Red button matching Zoho screenshot */
-button {
-  padding: 12px;
-  margin-top: 10px;
-  background: #f84f4f; /* Zoho red */
-  border: none;
-  color: #fff;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 15px;
-  font-weight: bold;
-}
-button:hover { 
-  background: #dc2626; /* Darker red on hover */
+h2#formTitle {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #ffffff;
 }
 
-.switch { margin-top: 20px; font-size: 13px; color: #64748b; }
-.switch a { color: #f84f4f; text-decoration: none; font-weight: bold; }
-
-/* ======== ICONS ======== */
-/* Person Icon */
-#signupFullName, #signupUsername, #loginIdentifier {
-  background-image: url("user.svg"); 
+/* ======== FORMS & INPUTS ======== */
+form {
+    display: flex;
+    flex-direction: column;
 }
 
-/* Mail Icon */
-#signupEmail {
-  background-image: url("Email.svg"); 
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 15px;
+    background-color: #1e1e2d; /* Dark input fill */
+    border: 1px solid #3a3a52; /* Subtle border */
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.3s;
 }
 
-/* Phone Icon */
-#signupPhone {
-  background-image: url("Phone.svg");
+input[type="text"]:focus,
+input[type="password"]:focus {
+    border-color: #7b61ff; /* Purple glow on focus */
+    box-shadow: 0 0 0 2px rgba(123, 97, 255, 0.2);
 }
 
-/* Lock Icon */
-#signupPassword, #signupConfirmPassword, #loginPassword {
-  background-image: url("lock.svg");
+/* Hardcode padding for icons so text doesn't overlap */
+#loginIdentifier, #loginPassword {
+    padding-left: 40px;
+    background-repeat: no-repeat;
+    background-position: 12px center;
+    background-size: 18px;
 }
 
-
-/* ======== CHECKBOX AND TERMS ======== */
-.data-center-text {
-  font-size: 12px;
-  color: #64748b;
-  margin-top: 5px;
-  margin-bottom: 15px;
+/* Add your SVG icons here if you have them, otherwise it falls back nicely */
+#loginIdentifier {
+    background-image: url('user.svg'); 
+}
+#loginPassword {
+    background-image: url('lock.svg');
 }
 
-.checkbox-container {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  font-size: 13px;
-  color: #111827;
+/* ======== CAPTCHA SECTION ======== */
+.captcha-box {
+    background-color: #1e1e2d;
+    border: 1px solid #3a3a52;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 15px;
 }
 
-/* We have to strip away the padding and background we gave to the text inputs earlier */
-input[type="checkbox"] {
-  padding: 0;
-  margin-bottom: 0;
-  margin-right: 8px;
-  width: auto;
-  background: none;
-  cursor: pointer;
+.captcha-label {
+    display: block;
+    font-size: 0.8rem;
+    color: #a1a1aa;
+    margin-bottom: 10px;
 }
 
-.checkbox-container label {
-  line-height: 1.4;
+.captcha-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
 }
 
-.checkbox-container a {
-  color: #111827;
-  text-decoration: underline;
-  font-weight: bold;
-}
-.checkbox-container a:hover {
-  color: #f84f4f; /* Turns red when you hover over the links */
+#captchaCanvas {
+    background: #ffffff;
+    border-radius: 4px;
+    flex: 1;
+    height: 48px;
+    width: 100%;
 }
 
-/* Password Strength Meter */
-.strength-meter {
-  font-size: 12px;
-  margin-top: -10px;
-  margin-bottom: 12px;
-  padding-left: 5px;
-  font-weight: bold;
+#refreshCaptcha {
+    background-color: #2a2a3c;
+    border: 1px solid #3a3a52;
+    border-radius: 4px;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+
+#refreshCaptcha:hover {
+    background-color: #3f3f5a;
+}
+
+.captcha-error {
+    font-size: 0.85rem;
+    color: #ef4444; /* Red error */
+    display: block;
+    min-height: 16px;
+}
+
+/* Override margin for the input inside the captcha box */
+.captcha-box input {
+    margin-bottom: 0;
+    background-color: #242435; /* Make it match the card */
+}
+
+/* ======== BUTTONS ======== */
+.primary-btn {
+    width: 100%;
+    padding: 14px;
+    background-color: #7b61ff; /* The vibrant purple from your screenshot */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 5px;
+}
+
+.primary-btn:hover {
+    background-color: #6a4fe0;
+}
+
+.secondary-btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 10px;
+    background-color: transparent;
+    color: #a1a1aa;
+    border: 1px solid #3a3a52;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.secondary-btn:hover {
+    background-color: #3a3a52;
+    color: white;
+}
+
+/* ======== LINKS & TEXT ======== */
+.forgot-password-section {
+    text-align: right;
+    margin-top: 5px;  /* Reduced from 15px to bring it closer */
+    margin-bottom: 20px;
+}
+
+.forgot-password-section a {
+    color: #a1a1aa;
+    text-decoration: none;
+    font-size: 0.85rem;
+}
+
+.forgot-password-section a:hover {
+    color: #ffffff;
+}
+
+.bottom-text {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #a1a1aa;
+}
+
+.bottom-text a {
+    color: #7b61ff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.bottom-text a:hover {
+    text-decoration: underline;
+}
+
+/* ======== 2FA SPECIFIC ======== */
+.two-factor-subtitle {
+    margin-bottom: 15px; 
+    color: #a1a1aa; 
+    font-size: 0.9rem; 
+    text-align: center;
+}
+
+#twoFactorCode {
+    font-size: 1.5rem;
+    text-align: center;
+    letter-spacing: 12px;
+    font-family: monospace;
+    font-weight: bold;
+    padding-left: 16px; /* Reset padding for center alignment */
+}
+
+.error-msg {
+    color: #ef4444; 
+    font-size: 0.85rem; 
+    margin-bottom: 10px; 
+    text-align: center; 
+    min-height: 14px;
 }
