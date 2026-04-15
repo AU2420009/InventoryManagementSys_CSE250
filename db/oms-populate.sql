@@ -2,6 +2,8 @@
 
 USE inventory_db;
 
+START TRANSACTION;
+
 INSERT INTO products (Product_ID, Name, Price, Quantity_Available)
 VALUES
 (1, 'Tomato 1Kg',23,560000),
@@ -38,4 +40,4 @@ VALUES
 (3, 2, 50, 25)
 ;
 
-
+COMMIT;
