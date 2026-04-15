@@ -1,10 +1,12 @@
-import mysql from "mysql2/promise";
+import dotenv from 'dotenv';
+dotenv.config();
+import mariadb from 'mariadb';
 
-const db = mysql.createPool({
-  host: "localhost",
-  user: "dbuser",
-  password: "dbpassword",
-  database: "inventory_db"
+const db = mariadb.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
 });
 
 export default db;
