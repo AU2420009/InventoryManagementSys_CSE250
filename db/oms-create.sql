@@ -40,3 +40,21 @@ CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (Product_ID) REFERENCES products(Product_ID)
         ON DELETE CASCADE
 );
+
+-- RBAC Tables
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('admin', 'user', 'customer') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE sessions (
+    session_id VARCHAR(128) PRIMARY KEY,
+    user_id INT NOT NULL,
+    role VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
