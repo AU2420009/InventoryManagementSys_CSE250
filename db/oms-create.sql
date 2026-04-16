@@ -66,8 +66,6 @@ CREATE TABLE sessions (
 );
 
 
-=======
-
 INSERT INTO Users (user_id, username, email, password_hash, role_id)
 VALUES
 ('1', 'AU24220001', 'ankit.k@ahduni.edu.in', '380007', 1),
