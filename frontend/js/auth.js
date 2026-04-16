@@ -220,8 +220,32 @@ document.addEventListener("DOMContentLoaded", () => {
           // Use custom 'success' graphic popup
           showPopup("Authentication successful. Redirecting...", "success");
           
-          localStorage.setItem("sessionId", data.sessionId);
+          // Backend returns `token` (JWT). Keep `sessionId` for backwards-compat.
+          const token = data.token || data.sessionId || "";
+          localStorage.setItem("token", token);
+          localStorage.setItem("sessionId", token);
           localStorage.setItem("role", data.role);
+
+          // Derive user id from JWT payload (no verification needed client-side)
+          try {
+            const payloadPart = token.split(".")[1];
+            if (payloadPart) {
+              const base64 = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+              const json = decodeURIComponent(
+                atob(base64)
+                  .split("")
+                  .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+                  .join("")
+              );
+              const payload = JSON.parse(json);
+              if (payload?.id != null) {
+                localStorage.setItem("userId", String(payload.id));
+                localStorage.setItem("customerId", String(payload.id));
+              }
+            }
+          } catch (e) {
+            console.warn("Failed to decode token payload:", e);
+          }
           
           // Wait 1.5 seconds so the user can see the success popup before redirecting
           setTimeout(() => {

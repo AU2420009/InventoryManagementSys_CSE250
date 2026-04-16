@@ -24,6 +24,19 @@ export const createOrder = async (req, res) => {
       return res.status(400).json({ error: "Customer_ID and items are required" });
     }
 
+    for (const item of items) {
+      if (
+        item == null ||
+        !Number.isInteger(item.Product_ID) ||
+        !Number.isInteger(item.Quantity_Ordered) ||
+        item.Quantity_Ordered <= 0
+      ) {
+        return res.status(400).json({
+          error: "Each item must have integer Product_ID and positive integer Quantity_Ordered"
+        });
+      }
+    }
+
     await connection.beginTransaction();
 
     let totalAmount = 0;
@@ -91,7 +104,7 @@ export const createOrder = async (req, res) => {
     await connection.rollback();
 
     console.error(err);
-    res.status(500).send(err.message);
+    res.status(500).json({ error: err.message });
 
   } finally {
 

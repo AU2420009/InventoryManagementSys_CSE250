@@ -131,6 +131,7 @@
 
 </main>
 
+<script src="../js/popup.js"></script>
 <script>
     function checkAuth() {
         if (localStorage.getItem('role') !== 'admin') {
@@ -182,7 +183,7 @@
             load();
         }catch(e){
             console.error(e);
-            alert(`Error deleting customer: ${String(e.message || e)}`);
+            showPopup(`Error deleting customer: ${String(e.message || e)}`, 'error');
         }
     }
 

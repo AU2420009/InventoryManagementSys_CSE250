@@ -73,14 +73,112 @@
             margin: 0 auto;
         }
 
-        table {
+        .card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            padding: 1.25rem;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: #374151;
+            margin-bottom: 0.35rem;
+            font-weight: 600;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 0.65rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: #fff;
+        }
+
+        .items-table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        th, td {
-            padding: 0.8rem;
+        .items-table th, .items-table td {
+            padding: 0.6rem 0.5rem;
             border-bottom: 1px solid #eee;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .items-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #374151;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #111827;
+            border: 1px solid #d1d5db;
+            padding: 0.55rem 0.8rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 0.45rem 0.7rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            padding: 0.65rem 0.9rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .muted {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 640px) {
+            .items-table th:nth-child(3),
+            .items-table td:nth-child(3) {
+                display: none;
+            }
+        }
+
+        .error {
+            color: #dc2626;
+            font-size: 0.9rem;
+            margin-top: 0.75rem;
         }
     </style>
 </head>
@@ -102,13 +200,37 @@
 
     <h1>Place Order</h1>
 
-    <select id="productSelect"></select>
-    <input type="number" id="quantity" placeholder="Quantity">
-    <button onclick="placeOrder()">Submit</button>
+    <div class="card">
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 55%;">Product</th>
+                    <th style="width: 20%;">Qty</th>
+                    <th>Stock / Price</th>
+                    <th style="width: 1%;">Action</th>
+                </tr>
+            </thead>
+            <tbody id="itemsBody"></tbody>
+        </table>
+
+        <div class="controls">
+            <div style="display:flex; gap: 0.75rem; align-items:center; flex-wrap: wrap;">
+                <button id="addItemBtn" class="btn-secondary" type="button">Add Item</button>
+                <span id="orderHint" class="muted"></span>
+            </div>
+            <button id="submitBtn" class="btn-primary" onclick="placeOrder()">Submit Order</button>
+        </div>
+        <div id="error" class="error" style="display:none;"></div>
+    </div>
 
 </main>
 
+<script src="../js/popup.js"></script>
 <script>
+const API_BASE = 'http://localhost:5000';
+let productsCache = [];
+let rowCounter = 0;
+
 function checkAuth() {
     if (localStorage.getItem('role') !== 'customer') {
         window.location.href = '../login.html';
@@ -120,76 +242,263 @@ function logout() {
     window.location.href = '../login.html';
 }
 
+function decodeJwtPayload(token) {
+    try {
+        const payloadPart = token.split('.')[1];
+        if (!payloadPart) return null;
+        const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+        const json = decodeURIComponent(
+            atob(base64)
+                .split('')
+                .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                .join('')
+        );
+        return JSON.parse(json);
+    } catch {
+        return null;
+    }
+}
+
+function getToken() {
+    return localStorage.getItem('token') || localStorage.getItem('sessionId') || '';
+}
+
+function getCustomerId() {
+    const explicit = localStorage.getItem('customerId') || localStorage.getItem('userId');
+    if (explicit) return Number(explicit);
+    const token = getToken();
+    const payload = token ? decodeJwtPayload(token) : null;
+    if (payload?.id) return Number(payload.id);
+    return null;
+}
+
+function showError(message) {
+    const el = document.getElementById('error');
+    if (!message) {
+        el.style.display = 'none';
+        el.textContent = '';
+        return;
+    }
+    el.style.display = 'block';
+    el.textContent = message;
+}
+
+function setSubmitting(isSubmitting) {
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = isSubmitting;
+    btn.textContent = isSubmitting ? 'Submitting…' : 'Submit Order';
+}
+
+function renderOrderHint() {
+    const hint = document.getElementById('orderHint');
+    const rows = Array.from(document.querySelectorAll('#itemsBody tr'));
+    const count = rows.length;
+    hint.textContent = count ? `${count} item${count === 1 ? '' : 's'} in this order` : '';
+}
+
+function productOptionHtml(selectedId) {
+    const options = ['<option value="">-- Choose a product --</option>'];
+    productsCache.forEach(p => {
+        const id = String(p.Product_ID);
+        const selected = String(selectedId || '') === id ? ' selected' : '';
+        options.push(`<option value="${id}"${selected}>${p.Name}</option>`);
+    });
+    return options.join('');
+}
+
+function rowMetaText(productId) {
+    const id = Number(productId);
+    const product = productsCache.find(p => Number(p.Product_ID) === id);
+    if (!product) return '';
+    return `Stock: ${product.Quantity_Available} • Rs ${Number(product.Price).toLocaleString()}`;
+}
+
+function addRow(initial = {}) {
+    const itemsBody = document.getElementById('itemsBody');
+    const rowId = ++rowCounter;
+    const productId = initial.Product_ID ?? '';
+    const qty = initial.Quantity_Ordered ?? 1;
+
+    const tr = document.createElement('tr');
+    tr.dataset.rowId = String(rowId);
+    tr.innerHTML = `
+        <td>
+            <label class="muted" style="display:none;">Product</label>
+            <select data-field="product">${productOptionHtml(productId)}</select>
+        </td>
+        <td>
+            <label class="muted" style="display:none;">Qty</label>
+            <input data-field="qty" type="number" min="1" step="1" value="${Number(qty) || 1}">
+        </td>
+        <td class="muted" data-field="meta">${rowMetaText(productId)}</td>
+        <td><button type="button" class="btn-danger" data-action="remove">Remove</button></td>
+    `;
+
+    itemsBody.appendChild(tr);
+    renderOrderHint();
+}
+
 async function loadProducts() {
     try {
-        const res = await fetch('http://localhost:5000/products');
+        showError('');
+        const res = await fetch(`${API_BASE}/products`);
         
         if (!res.ok) {
             throw new Error('Failed to load products');
         }
         
         const products = await res.json();
-        const select = document.getElementById('productSelect');
-        
-        products.forEach(p => {
-            select.innerHTML += `<option value="${p.Product_ID}">
-                ${p.Name} (Stock: ${p.Quantity_Available}, Rs${p.Price})
-            </option>`;
-        });
+        productsCache = Array.isArray(products) ? products : [];
+        if (!document.querySelector('#itemsBody tr')) {
+            addRow();
+        } else {
+            document.querySelectorAll('#itemsBody select[data-field="product"]').forEach(sel => {
+                const current = sel.value;
+                sel.innerHTML = productOptionHtml(current);
+            });
+            document.querySelectorAll('#itemsBody tr').forEach(tr => {
+                const productId = tr.querySelector('select[data-field="product"]')?.value;
+                const meta = tr.querySelector('[data-field="meta"]');
+                if (meta) meta.textContent = rowMetaText(productId);
+            });
+        }
     } catch (error) {
         console.error('Error loading products:', error);
-        alert('Error loading products. Please try again.');
+        showError('Error loading products. Please check the backend and try again.');
     }
+}
+
+function collectItems() {
+    const rows = Array.from(document.querySelectorAll('#itemsBody tr'));
+    const items = [];
+
+    for (const row of rows) {
+        const productId = Number(row.querySelector('select[data-field="product"]')?.value);
+        const qty = Number(row.querySelector('input[data-field="qty"]')?.value);
+        if (!productId) continue;
+        items.push({ Product_ID: productId, Quantity_Ordered: qty });
+    }
+
+    // Combine duplicates
+    const combined = new Map();
+    for (const item of items) {
+        const key = item.Product_ID;
+        const prev = combined.get(key) || 0;
+        combined.set(key, prev + (Number(item.Quantity_Ordered) || 0));
+    }
+    return Array.from(combined.entries()).map(([Product_ID, Quantity_Ordered]) => ({
+        Product_ID,
+        Quantity_Ordered
+    }));
 }
 
 async function placeOrder() {
     try {
-        const product_id = document.getElementById('productSelect').value;
-        const quantity = document.getElementById('quantity').value;
-        
-        if (!product_id || !quantity) {
-            alert('Please select a product and enter quantity');
+        showError('');
+        const customerId = getCustomerId();
+        if (!customerId) {
+            showError('Customer ID not found. Please log out and log in again.');
             return;
         }
-        
-        // Get customer ID from session (you'll need to implement this)
-        const customerId = localStorage.getItem('customerId') || 1; // Fallback for testing
-        
-        const res = await fetch('http://localhost:5000/orders', {
+
+        const items = collectItems();
+        if (items.length === 0) {
+            showError('Add at least one item to place an order.');
+            return;
+        }
+
+        for (const item of items) {
+            if (!Number.isInteger(item.Quantity_Ordered) || item.Quantity_Ordered <= 0) {
+                showError('All quantities must be positive whole numbers.');
+                return;
+            }
+
+            const product = productsCache.find(p => Number(p.Product_ID) === Number(item.Product_ID));
+            if (!product) {
+                showError('One or more selected products are not available. Please reload products.');
+                return;
+            }
+
+            if (item.Quantity_Ordered > Number(product.Quantity_Available)) {
+                showError(`"${product.Name}" only has ${product.Quantity_Available} available.`);
+                return;
+            }
+        }
+
+        setSubmitting(true);
+
+        const token = getToken();
+        const res = await fetch(`${API_BASE}/orders`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem('sessionId')
+                ...(token ? { 'Authorization': 'Bearer ' + token } : {})
             },
             body: JSON.stringify({ 
                 Customer_ID: parseInt(customerId),
-                items: [{
-                    Product_ID: parseInt(product_id),
-                    Quantity_Ordered: parseInt(quantity)
-                }]
+                items: items.map(i => ({
+                    Product_ID: parseInt(i.Product_ID),
+                    Quantity_Ordered: parseInt(i.Quantity_Ordered)
+                }))
             })
         });
         
-        const data = await res.json();
+        let data = {};
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+            data = await res.json().catch(() => ({}));
+        } else {
+            const text = await res.text().catch(() => '');
+            data = text ? { error: text } : {};
+        }
         
         if (res.ok) {
-            alert('Order placed successfully!');
-            // Reset form
-            document.getElementById('productSelect').value = '';
-            document.getElementById('quantity').value = '';
-            // Reload products to update stock
-            document.getElementById('productSelect').innerHTML = '<option value="">-- Choose a product --</option>';
-            loadProducts();
+            showPopup('Order placed successfully. Redirecting…', 'success');
+            // Reset rows to a single blank row
+            document.getElementById('itemsBody').innerHTML = '';
+            addRow();
+
+            // Reload products to update stock and redirect
+            await loadProducts();
+            setTimeout(() => {
+                window.location.href = 'orders.html';
+            }, 1200);
         } else {
-            alert(data.error || 'Failed to place order');
+            showError(data?.error || data?.message || `Failed to place order (HTTP ${res.status})`);
         }
     } catch (error) {
         console.error('Error placing order:', error);
-        alert('Error placing order. Please try again.');
+        showError('Error placing order. Please try again.');
+    } finally {
+        setSubmitting(false);
     }
 }
 
 document.getElementById('logoutBtn').addEventListener('click', logout);
+document.getElementById('addItemBtn').addEventListener('click', () => addRow());
+
+document.getElementById('itemsBody').addEventListener('change', (e) => {
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
+    if (target.matches('select[data-field="product"]')) {
+        const tr = target.closest('tr');
+        const meta = tr?.querySelector('[data-field="meta"]');
+        if (meta) meta.textContent = rowMetaText(target.value);
+    }
+});
+
+document.getElementById('itemsBody').addEventListener('click', (e) => {
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
+    if (target.matches('button[data-action="remove"]')) {
+        const tr = target.closest('tr');
+        tr?.remove();
+        if (!document.querySelector('#itemsBody tr')) {
+            addRow();
+        }
+        renderOrderHint();
+    }
+});
 
 checkAuth();
 loadProducts();

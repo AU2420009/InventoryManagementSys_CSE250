@@ -17,6 +17,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Prevent "Do not know how to serialize a BigInt" when DB returns BIGINT values.
+app.set("json replacer", (key, value) =>
+  typeof value === "bigint" ? value.toString() : value
+);
+
 app.get("/", (req, res) => {
   res.send("Backend is running");
 });

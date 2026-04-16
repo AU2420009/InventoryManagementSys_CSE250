@@ -73,14 +73,34 @@
             margin: 0 auto;
         }
 
+        .card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
+            background: #fff;
         }
 
         th, td {
             padding: 0.8rem;
             border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .muted {
+            color: #6b7280;
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -102,22 +122,27 @@
 
     <h1>My Orders</h1>
 
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Product</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody id="ordersTable"></tbody>
-    </table>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="ordersTable"></tbody>
+        </table>
+    </div>
+    <p class="muted" id="hint"></p>
 
 </main>
 
 <script>
+const API_BASE = 'http://localhost:5000';
+
 function checkAuth() {
     const role = localStorage.getItem('role');
     if (role !== 'customer') {
@@ -130,58 +155,94 @@ function logout() {
     window.location.href = '../login.html';
 }
 
+function decodeJwtPayload(token) {
+    try {
+        const payloadPart = token.split('.')[1];
+        if (!payloadPart) return null;
+        const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+        const json = decodeURIComponent(
+            atob(base64)
+                .split('')
+                .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                .join('')
+        );
+        return JSON.parse(json);
+    } catch {
+        return null;
+    }
+}
+
+function getToken() {
+    return localStorage.getItem('token') || localStorage.getItem('sessionId') || '';
+}
+
+function getCustomerId() {
+    const explicit = localStorage.getItem('customerId') || localStorage.getItem('userId');
+    if (explicit) return Number(explicit);
+    const token = getToken();
+    const payload = token ? decodeJwtPayload(token) : null;
+    if (payload?.id) return Number(payload.id);
+    return null;
+}
+
+function normalizeStatus(order) {
+    return order?.Status ?? order?.status ?? order?.STATUS ?? 'Processing';
+}
+
 async function loadOrders() {
     try {
-        // Get customer ID from session (you'll need to implement this)
-        const customerId = localStorage.getItem('customerId') || 1; // Fallback for testing
-        
-        const res = await fetch(`http://localhost:5000/orders/customer/${customerId}`, {
-            headers: {
-                'Authorization': 'Bearer ' + localStorage.getItem('sessionId')
-            }
+        const hint = document.getElementById('hint');
+        hint.textContent = '';
+
+        const customerId = getCustomerId();
+        if (!customerId) {
+            hint.textContent = 'Customer ID not found. Please log out and log in again.';
+            return;
+        }
+
+        const token = getToken();
+        const res = await fetch(`${API_BASE}/orders/customer/${customerId}`, {
+            headers: token ? { 'Authorization': 'Bearer ' + token } : {}
         });
 
         if (!res.ok) {
-            throw new Error('Failed to load orders');
+            const text = await res.text().catch(() => '');
+            throw new Error(`HTTP ${res.status} ${text}`.trim());
         }
 
         const orders = await res.json();
         const table = document.getElementById('ordersTable');
         table.innerHTML = '';
 
-        if (orders.length === 0) {
-            table.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem;">No orders found</td></tr>';
+        const list = Array.isArray(orders) ? orders : [];
+
+        if (list.length === 0) {
+            table.innerHTML = '<tr><td colspan="5" class="muted" style="padding: 1.25rem;">No orders found</td></tr>';
             return;
         }
 
-        // Display orders with their items
-        orders.forEach(order => {
-            if (order.items && order.items.length > 0) {
-                order.items.forEach((item, index) => {
-                    table.innerHTML += `
-                    <tr>
-                        <td>${order.Order_ID}${index > 0 ? '' : ''}</td>
-                        <td>${item.Name}</td>
-                        <td>${item.Quantity_Ordered}</td>
-                        <td>Rs ${item.Price_At_Order_Time}</td>
-                        <td>${order.Status}</td>
-                    </tr>`;
-                });
-            } else {
-                table.innerHTML += `
-                <tr>
-                    <td>${order.Order_ID}</td>
-                    <td>No items</td>
-                    <td>0</td>
-                    <td>Rs 0</td>
-                    <td>${order.Status}</td>
-                </tr>`;
-            }
+        list.forEach(order => {
+            const items = Array.isArray(order.items) ? order.items : [];
+            const itemsText = items.length
+                ? items.map(i => `${i.Name} (x${i.Quantity_Ordered})`).join(', ')
+                : '—';
+            const status = normalizeStatus(order);
+            const date = order.Order_Date ?? '—';
+            const totalAmount = order.Total_Amount ?? 0;
+
+            table.innerHTML += `
+            <tr>
+                <td>${order.Order_ID ?? ''}</td>
+                <td>${date}</td>
+                <td>${itemsText}</td>
+                <td>Rs ${Number(totalAmount).toLocaleString()}</td>
+                <td>${status}</td>
+            </tr>`;
         });
     } catch (error) {
         console.error('Error loading orders:', error);
-        document.getElementById('ordersTable').innerHTML = 
-            '<tr><td colspan="5" style="text-align: center; color: red;">Error loading orders. Please try again.</td></tr>';
+        document.getElementById('ordersTable').innerHTML =
+            `<tr><td colspan="5" style="padding: 1.25rem; color: #dc2626;">Error loading orders: ${String(error.message || error)}</td></tr>`;
     }
 }
 
