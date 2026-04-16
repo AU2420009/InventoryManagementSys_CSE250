@@ -5,3 +5,4 @@ frontend/node_modules
 .vscode/
 # Temporary notes
 notes.txt
+.idea/
