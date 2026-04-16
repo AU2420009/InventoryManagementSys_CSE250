@@ -135,27 +135,43 @@
     }
 
     async function load(){
-        const res=await fetch('http://localhost:5000/products');
-        const data=await res.json();
+        try {
+            const res = await fetch('http://localhost:5000/products');
+            if (!res.ok) {
+                throw new Error('Failed to fetch products');
+            }
+            const data = await res.json();
 
-        const t=document.getElementById('t');
-        t.innerHTML='';
+            const t = document.getElementById('t');
+            t.innerHTML = '';
 
-        data.forEach(p=>{
-            t.innerHTML+=`
-            <tr>
-                <td>${p.Product_ID}</td>
-                <td>${p.Name}</td>
-                <td>${p.Quantity_Available}</td>
-                <td>Rs ${p.Price}</td>
-                <td><button onclick="del(${p.Product_ID})">Delete</button></td>
-            </tr>`;
-        });
+            data.forEach(p => {
+                t.innerHTML += `
+                <tr>
+                    <td>${p.Product_ID}</td>
+                    <td>${p.Name}</td>
+                    <td>${p.Quantity_Available}</td>
+                    <td>Rs ${p.Price}</td>
+                    <td><button onclick="del(${p.Product_ID})">Delete</button></td>
+                </tr>`;
+            });
+        } catch (error) {
+            console.error('Error loading products:', error);
+            document.getElementById('t').innerHTML = '<tr><td colspan="5">Error loading products. Please check the backend.</td></tr>';
+        }
     }
 
     async function del(id){
-        await fetch(`http://localhost:5000/products/${id}`,{method:'DELETE'});
-        load();
+        try {
+            const res = await fetch(`http://localhost:5000/products/${id}`, {method:'DELETE'});
+            if (!res.ok) {
+                throw new Error('Failed to delete product');
+            }
+            load();
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            alert('Error deleting product. Please try again.');
+        }
     }
 
     document.getElementById('logoutBtn').addEventListener('click', logout);
