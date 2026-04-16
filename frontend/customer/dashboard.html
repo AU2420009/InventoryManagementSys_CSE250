@@ -178,7 +178,7 @@ function logout() {
 }
 
 async function loadDashboard() {
-    const res = await fetch('/orders', {
+    const res = await fetch('http://localhost:5000/orders', {
         headers: {
             'Authorization': 'Bearer ' + localStorage.getItem('sessionId')
         }

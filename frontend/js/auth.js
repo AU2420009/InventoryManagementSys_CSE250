@@ -116,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
               window.location.href = "customer/dashboard.html";
               break;
             default:
-              window.location.href = "admin/dashboard.html";
+              window.location.href = "customer/dashboard.html";
               break;
           }
         }
