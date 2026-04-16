@@ -1,0 +1,19 @@
+RewriteEngine On
+
+# Home
+RewriteRule ^$ index.html [L]
+
+# Section roots -> dashboards
+RewriteRule ^(admin|staff|customer)/?$ $1/dashboard.html [L]
+
+# Serve existing files directly
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# Extensionless -> .html (e.g. /login -> /login.html, /staff/orders -> /staff/orders.html)
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.+?)/?$ $1.html [L]
+
+# Serve existing directories directly (e.g. /css)
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
