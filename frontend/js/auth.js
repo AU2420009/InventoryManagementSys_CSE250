@@ -101,8 +101,24 @@ document.addEventListener("DOMContentLoaded", () => {
           generateCaptcha(); 
         } else {
           alert("Authentication successful. Welcome!");
-          localStorage.setItem("token", "logged-in"); 
-          window.location.href = "dashboard.html";
+          localStorage.setItem("sessionId", data.sessionId);
+          localStorage.setItem("role", data.role);
+          
+          // Redirect based on user role
+          switch(data.role) {
+            case 'admin':
+              window.location.href = "admin/dashboard.html";
+              break;
+            case 'staff':
+              window.location.href = "staff/dashboard.html";
+              break;
+            case 'customer':
+              window.location.href = "customer/dashboard.html";
+              break;
+            default:
+              window.location.href = "admin/dashboard.html";
+              break;
+          }
         }
       })
       .catch(error => {
