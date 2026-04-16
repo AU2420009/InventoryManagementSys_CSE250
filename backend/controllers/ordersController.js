@@ -54,7 +54,7 @@ export const createOrder = async (req, res) => {
       [Customer_ID, totalAmount]
     );
 
-    const orderId = orderResult?.insertId ?? null;
+    const orderId = Number(orderResult?.insertId ?? 0) || null;
     if (!orderId) {
       throw new Error("Failed to create order");
     }
@@ -83,7 +83,7 @@ export const createOrder = async (req, res) => {
 
     res.json({
       message: "Order created successfully",
-      orderId: orderId
+      orderId: Number(orderId) || null
     });
 
   } catch (err) {
