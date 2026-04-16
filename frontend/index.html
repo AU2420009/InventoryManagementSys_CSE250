@@ -374,7 +374,7 @@
       btn.textContent = 'Sending…';
 
       try {
-        const res = await fetch('/api/auth/contact', {
+        const res = await fetch('http://localhost:5000/api/auth/contact', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, phone, query })
@@ -394,6 +394,8 @@
       } catch (err) {
         msgEl.className = 'form-msg error';
         msgEl.textContent = '❌ ' + err.message;
+        //DEBUG
+        console.log(res);
       } finally {
         btn.disabled = false;
         btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send Message';
@@ -401,4 +403,4 @@
     }
   </script>
 </body>
-</html>
+</html> 
