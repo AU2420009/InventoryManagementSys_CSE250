@@ -149,8 +149,8 @@
             <div class="stat-value" id="customers">0</div>
         </div>
         <div class="stat-card card-purple">
-            <div class="stat-title">Revenue</div>
-            <div class="stat-value" id="revenue">0</div>
+            <div class="stat-title">Pending Orders</div>
+            <div class="stat-value" id="pending">0</div>
         </div>
     </div>
 
@@ -183,10 +183,9 @@ async function loadDashboard() {
         document.getElementById('products').textContent = products.length;
         document.getElementById('orders').textContent = orders.length;
         document.getElementById('customers').textContent = customers.length;
-        
-        // Calculate revenue (sum of all order totals)
-        const revenue = orders.reduce((total, order) => total + (order.Total_Amount || 0), 0);
-        document.getElementById('revenue').textContent = `Rs ${revenue.toLocaleString()}`;
+
+        const pendingOrders = orders.filter(order => (order.Status ?? order.status ?? order.STATUS) === 'Processing').length;
+        document.getElementById('pending').textContent = pendingOrders;
     } catch (error) {
         console.error('Error loading dashboard data:', error);
     }

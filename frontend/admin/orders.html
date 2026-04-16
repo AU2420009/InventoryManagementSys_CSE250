@@ -120,51 +120,75 @@
 </nav>
 
 <main class="main-content">
-
     <h1>Orders Management</h1>
 
-<table>
-<thead><tr><th>ID</th><th>Status</th><th>Action</th></tr></thead>
-<tbody id="t"></tbody>
-</table>
+    <table>
+        <thead>
+            <tr><th>ID</th><th>Items</th><th>Total Qty</th><th>Status</th><th>Action</th></tr>
+        </thead>
+        <tbody id="t"></tbody>
+    </table>
 
 </main>
 
 <script>
-function checkAuth() {
-    if (localStorage.getItem('role') !== 'admin') {
+    function checkAuth() {
+        if (localStorage.getItem('role') !== 'admin') {
+            window.location.href = '../login.html';
+        }
+    }
+
+    function logout() {
+        localStorage.clear();
         window.location.href = '../login.html';
     }
-}
 
-function logout() {
-    localStorage.clear();
-    window.location.href = '../login.html';
-}
+    async function load(){
+        const t=document.getElementById('t');
+        t.innerHTML='';
 
-async function load(){
-const res=await fetch('http://localhost:5000/orders');
-const data=await res.json();
-const t=document.getElementById('t'); t.innerHTML='';
+        try{
+            const res=await fetch('http://localhost:5000/orders');
+            if(!res.ok){
+                const text = await res.text().catch(()=> '');
+                throw new Error(`HTTP ${res.status} ${text}`.trim());
+            }
+            const data=await res.json();
 
-data.forEach(o=>{
-t.innerHTML+=`<tr>
-<td>${o.Order_ID}</td>
-<td>${o.Status}</td>
-<td><button onclick="del(${o.Order_ID})" class="btn-danger">Delete</button></td>
-</tr>`;
-});
-}
+            const orders = Array.isArray(data) ? data : [];
 
-async function del(id){
-await fetch(`http://localhost:5000/orders/${id}`,{method:'DELETE'});
-load();
-}
+            orders.forEach(o=>{
+                const items = Array.isArray(o.items) ? o.items : [];
+                const itemsText = items.length
+                    ? items.map(i => `${i.Name} (x${i.Quantity_Ordered})`).join(', ')
+                    : '—';
 
-document.getElementById('logoutBtn').addEventListener('click', logout);
+                const totalQty = items.reduce((sum,i)=>sum+(Number(i.Quantity_Ordered)||0),0);
 
-checkAuth();
-load();
+                t.innerHTML+=`
+                <tr>
+                    <td>${o.Order_ID ?? ''}</td>
+                    <td>${itemsText}</td>
+                    <td>${totalQty}</td>
+                    <td>${o.Status ?? o.status ?? o.STATUS ?? ''}</td>
+                    <td><button class="btn-danger" onclick="del(${o.Order_ID})">Delete</button></td>
+                </tr>`;
+            });
+        }catch(e){
+            console.error(e);
+            t.innerHTML = `<tr><td colspan="5">Error loading orders: ${String(e.message || e)}</td></tr>`;
+        }
+    }
+
+    async function del(id){
+        await fetch(`http://localhost:5000/orders/${id}`,{method:'DELETE'});
+        load();
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+
+    checkAuth();
+    load();
 </script>
 
 </body>

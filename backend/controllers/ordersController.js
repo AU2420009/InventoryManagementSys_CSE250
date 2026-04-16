@@ -50,7 +50,7 @@ export const createOrder = async (req, res) => {
     }
 
     const orderResult = await connection.query(
-      "INSERT INTO orders (Customer_ID, Order_Date, Total_Amount, Status) VALUES (?, CURDATE(), ?, 'Processing')",
+      "INSERT INTO orders (Customer_ID, Order_Date, Total_Amount) VALUES (?, CURDATE(), ?)",
       [Customer_ID, totalAmount]
     );
 
@@ -159,22 +159,30 @@ export const deleteOrder = async (req, res) => {
   try {
     await connection.beginTransaction();
 
+    const existingOrder = await connection.query(
+      "SELECT Order_ID FROM orders WHERE Order_ID = ?",
+      [orderId]
+    );
+
+    if (!Array.isArray(existingOrder) || existingOrder.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ error: "Order not found" });
+    }
+
     // Get order items first
     const items = await connection.query(
       "SELECT Product_ID, Quantity_Ordered FROM order_items WHERE Order_ID = ?",
       [orderId]
     );
 
-    if (items.length === 0) {
-      throw new Error("Order not found");
-    }
-
-    // Restore stock
-    for (let item of items) {
-      await connection.query(
-        "UPDATE products SET Quantity_Available = Quantity_Available + ? WHERE Product_ID = ?",
-        [item.Quantity_Ordered, item.Product_ID]
-      );
+    // Restore stock (only if items still exist)
+    if (Array.isArray(items) && items.length > 0) {
+      for (let item of items) {
+        await connection.query(
+          "UPDATE products SET Quantity_Available = Quantity_Available + ? WHERE Product_ID = ?",
+          [item.Quantity_Ordered, item.Product_ID]
+        );
+      }
     }
 
     // Delete order (cascade deletes order_items)

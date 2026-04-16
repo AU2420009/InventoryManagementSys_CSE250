@@ -92,6 +92,15 @@
             background: #f8fafc;
             font-weight: 600;
         }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -124,7 +133,7 @@
 
 <script>
     function checkAuth() {
-        if (localStorage.getItem('role') !== 'staff') {
+        if (localStorage.getItem('role') !== 'admin') {
             window.location.href = '../login.html';
         }
     }
@@ -152,7 +161,7 @@
                     <td>${p.Name}</td>
                     <td>${p.Quantity_Available}</td>
                     <td>Rs ${p.Price}</td>
-                    <td><button onclick="del(${p.Product_ID})">Delete</button></td>
+                    <td><button class="btn-danger" onclick="del(${p.Product_ID})">Delete</button></td>
                 </tr>`;
             });
         } catch (error) {

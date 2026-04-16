@@ -149,7 +149,10 @@
 
         try{
             const res=await fetch('http://localhost:5000/orders');
-            if(!res.ok) throw new Error('Failed to load orders');
+            if(!res.ok){
+                const text = await res.text().catch(()=> '');
+                throw new Error(`HTTP ${res.status} ${text}`.trim());
+            }
             const data=await res.json();
 
             const orders = Array.isArray(data) ? data : [];
@@ -167,13 +170,13 @@
                     <td>${o.Order_ID ?? ''}</td>
                     <td>${itemsText}</td>
                     <td>${totalQty}</td>
-                    <td>${o.Status ?? o.status ?? ''}</td>
-                    <td><button onclick="del(${o.Order_ID})">Delete</button></td>
+                    <td>${o.Status ?? o.status ?? o.STATUS ?? ''}</td>
+                    <td><button class="btn-danger" onclick="del(${o.Order_ID})">Delete</button></td>
                 </tr>`;
             });
         }catch(e){
             console.error(e);
-            t.innerHTML = '<tr><td colspan="5">Error loading orders</td></tr>';
+            t.innerHTML = `<tr><td colspan="5">Error loading orders: ${String(e.message || e)}</td></tr>`;
         }
     }
 
