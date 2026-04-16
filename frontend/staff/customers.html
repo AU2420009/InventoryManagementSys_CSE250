@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Customers</title>
+
+<style>
+body{font-family:Inter;background:#f9fafb;margin:0;}
+.navbar{display:flex;justify-content:space-between;padding:1rem 2rem;background:#fff;border-bottom:1px solid #eee;}
+.nav-links{display:flex;gap:2rem;}
+.nav-item{color:#4b5563;text-decoration:none;}
+.nav-item.active{color:#2563eb;border-bottom:2px solid #2563eb;}
+.main-content{padding:2rem;}
+table{width:100%;border-collapse:collapse;}
+th,td{padding:0.8rem;border-bottom:1px solid #eee;}
+</style>
+</head>
+
+<body>
+
+<nav class="navbar">
+<div>Hariram General Stores</div>
+<div class="nav-links">
+<a href="dashboard.html" class="nav-item">Dashboard</a>
+<a href="products.html" class="nav-item">Products</a>
+<a href="orders.html" class="nav-item">Orders</a>
+<a href="customers.html" class="nav-item active">Customers</a>
+</div>
+<button onclick="logout()">Logout</button>
+</nav>
+
+<main class="main-content">
+<h1>Customers</h1>
+<table>
+<thead><tr><th>ID</th><th>Name</th><th>Email</th></tr></thead>
+<tbody id="t"></tbody>
+</table>
+</main>
+
+<script>
+function checkAuth(){ if(localStorage.getItem('role')!=='staff') location='../login.html'; }
+function logout(){ localStorage.clear(); location='../login.html'; }
+
+async function load(){
+    const res=await fetch('http://localhost:5000/customers');
+    const data=await res.json();
+    const t=document.getElementById('t'); t.innerHTML='';
+
+    data.forEach(c=>{
+        t.innerHTML+=`<tr>
+        <td>${c.Customer_ID}</td>
+        <td>${c.Name}</td>
+        <td>${c.Email}</td>
+        </tr>`;
+    });
+}
+
+checkAuth();
+load();
+</script>
+
+</body>
+</html>
