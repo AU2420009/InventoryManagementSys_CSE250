@@ -1,36 +1,190 @@
 import express from "express";
-import db from "../db.js"; // Pulls in your database connection
+import db from "../db.js";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt"; 
+import nodemailer from "nodemailer"; // ✅ Added for sending emails
 
 const router = express.Router();
 
+// ---------------------------------------------------------
+// 1. LOGIN ROUTE (Kept exactly as your self-healing version)
+// ---------------------------------------------------------
 router.post("/login", async (req, res) => {
   const { usernameOrEmail, password } = req.body;
 
-  // 1. Make sure they didn't send blank fields
   if (!usernameOrEmail || !password) {
-    return res.status(400).json({ error: "Please provide both username/email and password." });
+    return res.status(400).json({
+      error: "Please provide both username/email and password."
+    });
   }
 
   try {
-    // 2. Query your actual database!
-    // CHANGE 'users' to your actual table name if it is different
-    const [rows] = await db.query(
-      "SELECT * FROM Users WHERE (email = ? OR username = ?) AND password = ?", 
-      [usernameOrEmail, usernameOrEmail, password]
+    console.log(`\n--- [LOGIN ATTEMPT] User: ${usernameOrEmail} ---`);
+    
+    // Fetch from DB without destructuring immediately
+    const queryResult = await db.query(
+      "SELECT * FROM Users WHERE email = ? OR username = ?",
+      [usernameOrEmail, usernameOrEmail]
+    );
+    
+    // Safely extract the rows (Handles both mysql and mysql2 automatically)
+    let rows = [];
+    if (Array.isArray(queryResult) && Array.isArray(queryResult[0])) {
+        rows = queryResult[0]; 
+    } else if (Array.isArray(queryResult)) {
+        rows = queryResult; 
+    }
+
+    // Check if user was found
+    if (rows.length === 0) {
+      console.log("❌ [LOGIN FAILED] No user found in database.");
+      return res.status(401).json({ error: "User not found." });
+    }
+
+    const user = rows[0];
+    
+    // Protect against missing columns
+    if (user.password_hash === undefined) {
+       console.log("⚠️ [ERROR] 'password_hash' column is missing from the database result!");
+       return res.status(500).json({ error: "Database schema error." });
+    }
+
+    // Your clever hybrid password check
+    const stored = String(user.password_hash).trim();
+    const entered = String(password).trim();
+
+    const isMatch =
+      stored.startsWith("$2") && stored.length > 50
+        ? await bcrypt.compare(entered, stored)
+        : entered === stored;
+
+    if (!isMatch) {
+      console.log("❌ [LOGIN FAILED] Passwords did not match.");
+      return res.status(401).json({ error: "Invalid password." });
+    }
+
+    // Create JWT 
+    const token = jwt.sign(
+      { id: user.user_id, role: user.role_id },
+      process.env.JWT_SECRET || "secretkey",
+      { expiresIn: "1h" }
     );
 
-    // 3. Check if the query found a matching user
-    if (rows.length > 0) {
-      // Success! Send back the approval
-      return res.json({ success: true, message: "Login successful!" });
-    } else {
-      // Failure! Send back the error
-      return res.status(401).json({ error: "Invalid username or password." });
-    }
+    // Role logic 
+    let role = "customer";
+    if (user.role_id === 1) role = "customer";
+    if (user.role_id === 2) role = "staff";
+    if (user.role_id === 3) role = "admin";
+
+    console.log(`✅ [LOGIN SUCCESS] User logged in as: ${role}`);
+    
+    return res.json({
+      success: true,
+      message: "Login successful!",
+      token,
+      role
+    });
+
   } catch (error) {
-    console.error("Login database error:", error);
+    console.error("🚨 [SYSTEM ERROR]:", error);
     return res.status(500).json({ error: "Internal server error." });
   }
+});
+
+// ---------------------------------------------------------
+// EMAIL & RESET PASSWORD SETUP
+// ---------------------------------------------------------
+
+// Temporary memory store for reset codes to avoid database schema errors
+const resetCodes = new Map(); 
+
+// Email sender setup (Requires a Gmail App Password)
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "hariramgeneralstores@gmail.com",
+    pass: "kgohhiotnudbqrjj"
+  }
+});
+
+// ---------------------------------------------------------
+// 2. REQUEST RESET CODE ROUTE
+// ---------------------------------------------------------
+router.post("/forgot-password", async (req, res) => {
+  const { identifier } = req.body; 
+
+  try {
+    // Find user in DB (using the same safe array extraction logic as login)
+    const queryResult = await db.query("SELECT * FROM Users WHERE email = ?", [identifier]);
+    let rows = [];
+    if (Array.isArray(queryResult) && Array.isArray(queryResult[0])) {
+        rows = queryResult[0]; 
+    } else if (Array.isArray(queryResult)) {
+        rows = queryResult; 
+    }
+    
+    if (rows.length === 0) {
+       return res.status(404).json({ error: "No user found with that email." });
+    }
+
+    const user = rows[0];
+
+    // Generate a 6-digit random code
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Save it in server memory for 15 minutes
+    resetCodes.set(user.email, {
+       code: resetCode,
+       expires: Date.now() + 15 * 60 * 1000
+    });
+
+    console.log(`\n🔑 [DEV LOG] Reset code for ${user.email} is: ${resetCode}\n`);
+
+    // Send the actual email
+    await transporter.sendMail({
+       from: '"Hariram General Stores" <hariramgeneralstores@gmail.com>',
+       to: user.email,
+       subject: "Your Password Reset Code",
+       text: `Hello ${user.username},\n\nYour password reset code is: ${resetCode}\n\nThis code will expire in 15 minutes.`
+    });
+
+    res.json({ success: true, message: "Reset code sent to your email!" });
+  } catch (err) {
+    console.error("🚨 [FORGOT PASSWORD ERROR]:", err);
+    res.status(500).json({ error: "Failed to send email." });
+  }
+});
+
+// ---------------------------------------------------------
+// 3. VERIFY CODE & RESET PASSWORD ROUTE
+// ---------------------------------------------------------
+router.post("/reset-password", async (req, res) => {
+   const { email, token, newPassword } = req.body;
+   
+   try {
+      // Look up the code in our memory store
+      const record = resetCodes.get(email);
+      
+      // Check if it exists, matches, and hasn't expired
+      if (!record || record.code !== token || Date.now() > record.expires) {
+         return res.status(400).json({ error: "Invalid or expired reset code." });
+      }
+
+      // Hash the brand new password securely
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update the database
+      await db.query("UPDATE Users SET password_hash = ? WHERE email = ?", [hashedPassword, email]);
+
+      // Delete the token so it can't be used again
+      resetCodes.delete(email);
+
+      console.log(`✅ [PASSWORD RESET] Success for user: ${email}`);
+      res.json({ success: true, message: "Password reset successfully! You can now log in." });
+   } catch (err) {
+      console.error("🚨 [RESET PASSWORD ERROR]:", err);
+      res.status(500).json({ error: "Failed to reset password." });
+   }
 });
 
 export default router;
