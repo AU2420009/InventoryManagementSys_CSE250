@@ -9,6 +9,69 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentCaptcha = "";
 
   // ==========================================
+  // 0. CUSTOM POPUP UI LOGIC
+  // ==========================================
+  function showPopup(message, type) {
+    // Remove existing popup if one is already open
+    const existing = document.getElementById('custom-popup-overlay');
+    if (existing) existing.remove();
+
+    // Create the dark overlay background
+    const overlay = document.createElement('div');
+    overlay.id = 'custom-popup-overlay';
+    Object.assign(overlay.style, {
+      position: 'fixed', top: '0', left: '0', width: '100%', height: '100%',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', 
+      justifyContent: 'center', alignItems: 'center', zIndex: '9999',
+      backdropFilter: 'blur(2px)' // gives a nice modern blur effect
+    });
+
+    // Create the central white box
+    const box = document.createElement('div');
+    Object.assign(box.style, {
+      backgroundColor: '#fff', padding: '30px 40px', borderRadius: '12px',
+      boxShadow: '0 10px 25px rgba(0,0,0,0.2)', textAlign: 'center',
+      minWidth: '300px', maxWidth: '80%', fontFamily: 'sans-serif'
+    });
+
+    // Create the Icon (✅ for success, ❌ for error)
+    const icon = document.createElement('div');
+    icon.innerHTML = type === 'success' ? '✅' : '❌';
+    Object.assign(icon.style, { fontSize: '45px', marginBottom: '15px' });
+
+    // Create the Text Message
+    const text = document.createElement('p');
+    text.textContent = message;
+    Object.assign(text.style, { fontSize: '18px', color: '#333', marginBottom: '25px', margin: '0 0 20px 0' });
+
+    // Create the OK/Close button
+    const btn = document.createElement('button');
+    btn.textContent = 'OK';
+    Object.assign(btn.style, {
+      padding: '10px 25px', border: 'none', borderRadius: '6px',
+      backgroundColor: type === 'success' ? '#22c55e' : '#ef4444',
+      color: 'white', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold',
+      transition: 'opacity 0.2s'
+    });
+    
+    // Add hover effect
+    btn.onmouseover = () => btn.style.opacity = '0.8';
+    btn.onmouseout = () => btn.style.opacity = '1';
+    
+    // Close logic
+    btn.onclick = () => overlay.remove();
+
+    // Assemble and inject into the page
+    box.appendChild(icon);
+    box.appendChild(text);
+    if (type === 'error') {
+      box.appendChild(btn); // Only show OK button for errors, let success auto-redirect
+    }
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+  }
+
+  // ==========================================
   // 1. CAPTCHA GENERATOR LOGIC
   // ==========================================
   function generateCaptcha() {
@@ -95,35 +158,42 @@ document.addEventListener("DOMContentLoaded", () => {
       .then(response => response.json())
       .then(data => {
         if (data.error) {
-          alert("Security Alert: " + data.error);
+          // ❌ REPLACED ALERT WITH CUSTOM POPUP
+          showPopup("Security Alert: " + data.error, "error");
+          
           // If login fails, force them to do a new CAPTCHA
           captchaInput.value = "";
           generateCaptcha(); 
         } else {
-          alert("Authentication successful. Welcome!");
+          // ✅ REPLACED ALERT WITH CUSTOM POPUP
+          showPopup("Authentication successful. Redirecting...", "success");
+          
           localStorage.setItem("sessionId", data.sessionId);
           localStorage.setItem("role", data.role);
           
-          // Redirect based on user role
-          switch(data.role) {
-            case 'admin':
-              window.location.href = "admin/dashboard.html";
-              break;
-            case 'staff':
-              window.location.href = "staff/dashboard.html";
-              break;
-            case 'customer':
-              window.location.href = "customer/dashboard.html";
-              break;
-            default:
-              window.location.href = "customer/dashboard.html";
-              break;
-          }
+          // Wait 1.5 seconds so the user can see the success popup before redirecting
+          setTimeout(() => {
+            switch(data.role) {
+              case 'admin':
+                window.location.href = "admin/dashboard.html";
+                break;
+              case 'staff':
+                window.location.href = "staff/dashboard.html";
+                break;
+              case 'customer':
+                window.location.href = "customer/dashboard.html";
+                break;
+              default:
+                window.location.href = "customer/dashboard.html";
+                break;
+            }
+          }, 1500); 
         }
       })
       .catch(error => {
         console.error("Error connecting to server:", error);
-        alert("Failed to connect to the backend. Is your Node server running?");
+        // ❌ REPLACED ALERT WITH CUSTOM POPUP
+        showPopup("Failed to connect to the backend. Is your Node server running?", "error");
       });
     });
   }
