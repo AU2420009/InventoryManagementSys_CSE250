@@ -42,18 +42,6 @@ CREATE TABLE IF NOT EXISTS order_items (
 );
 
 -- RBAC Tables (updated)
-CREATE TABLE sessions (
-    session_id VARCHAR(128) PRIMARY KEY,
-    -- Must be VARCHAR(20) to match the new Users table
-    user_id VARCHAR(20) NOT NULL, 
-    -- We keep the role name here as a string for fast access in Node.js
-    role_name VARCHAR(20) NOT NULL, 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP NOT NULL,
-    -- Linking to the new Users table
-    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
-);
-
 
 --For login
 CREATE TABLE roles (
@@ -72,4 +60,18 @@ CREATE TABLE Users (
     role_id INT,
     FOREIGN KEY (role_id) REFERENCES roles(role_id)
 );
+
+
+CREATE TABLE sessions (
+    session_id VARCHAR(128) PRIMARY KEY,
+    -- Must be VARCHAR(20) to match the new Users table
+    user_id VARCHAR(20) NOT NULL, 
+    -- We keep the role name here as a string for fast access in Node.js
+    role_name VARCHAR(20) NOT NULL, 
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL,
+    -- Linking to the new Users table
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+
 
