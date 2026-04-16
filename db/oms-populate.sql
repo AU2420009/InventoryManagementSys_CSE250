@@ -22,11 +22,11 @@ VALUES
 ;
 
 
-INSERT INTO orders (Order_ID, Customer_ID, Order_Date, Total_Amount)
+INSERT INTO orders (Order_ID, Customer_ID, Order_Date, Total_Amount, Status)
 VALUES
-(1, 1, '2026-03-12', 4500),
-(2, 3, '2026-03-21', 4900),
-(3, 2, '2026-03-27', 1250)
+(1, 1, '2026-03-12', 4500, 'Processing'),
+(2, 3, '2026-03-21', 4900, 'Processing'),
+(3, 2, '2026-03-27', 1250, 'Processing')
 ;
 
 
