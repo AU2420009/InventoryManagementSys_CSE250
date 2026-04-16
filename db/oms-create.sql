@@ -19,8 +19,9 @@ CREATE TABLE IF NOT EXISTS orders (
     Customer_ID INT NOT NULL,
     Order_Date DATE NOT NULL,
     Total_Amount DECIMAL(10,2),
+    Status VARCHAR(20) DEFAULT 'Processing'; -- {Processing, Completed, Cancelled}
     FOREIGN KEY (Customer_ID) REFERENCES customers(Customer_ID)
-        ON DELETE CASCADE
+        ON DELETE RESTRICT
         ON UPDATE CASCADE
 );
 

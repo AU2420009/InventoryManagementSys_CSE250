@@ -7,7 +7,7 @@ import nodemailer from "nodemailer"; // ✅ Added for sending emails
 const router = express.Router();
 
 // ---------------------------------------------------------
-// 1. LOGIN ROUTE (Kept exactly as your self-healing version)
+// 1. LOGIN ROUTE
 // ---------------------------------------------------------
 router.post("/login", async (req, res) => {
   const { usernameOrEmail, password } = req.body;
@@ -198,7 +198,6 @@ router.post("/contact", async (req, res) => {
   }
 
   try {
-    // ✅ FIXED: Replaced 'pool.getConnection()' with 'db.query()' to match the rest of your file
     await db.query(
       "INSERT INTO contact_submissions (name, email, phone, query) VALUES (?, ?, ?, ?)",
       [name, email, phone || null, query]
