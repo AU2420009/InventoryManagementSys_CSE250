@@ -19,7 +19,6 @@ CREATE TABLE IF NOT EXISTS orders (
     Customer_ID INT NOT NULL,
     Order_Date DATE NOT NULL,
     Total_Amount DECIMAL(10,2),
-
     FOREIGN KEY (Customer_ID) REFERENCES customers(Customer_ID)
         ON DELETE CASCADE
         ON UPDATE CASCADE
@@ -30,19 +29,15 @@ CREATE TABLE IF NOT EXISTS order_items (
     Product_ID INT NOT NULL,
     Quantity_Ordered INT NOT NULL,
     Price_At_Order_Time DECIMAL(10,2) NOT NULL,
-
     PRIMARY KEY (Order_ID, Product_ID),
-
     FOREIGN KEY (Order_ID) REFERENCES orders(Order_ID)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
-
     FOREIGN KEY (Product_ID) REFERENCES products(Product_ID)
         ON DELETE CASCADE
 );
 
--- RBAC Tables (updated)
---For login
+-- RBAC Tables
 CREATE TABLE roles (
     role_id INT PRIMARY KEY AUTO_INCREMENT,
     role_name VARCHAR(20) UNIQUE NOT NULL
@@ -56,23 +51,19 @@ CREATE TABLE Users (
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    role_id INT,CREATE TABLE sessions (
-    session_id VARCHAR(128) PRIMARY KEY,
-    -- Must be VARCHAR(20) to match the new Users table
-    user_id VARCHAR(20) NOT NULL,
-    -- We keep the role name here as a string for fast access in Node.js
-    role_name VARCHAR(20) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP NOT NULL,
-    -- Linking to the new Users table
-    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
-);
-
-
+    role_id INT,
     FOREIGN KEY (role_id) REFERENCES roles(role_id)
 );
 
--- Create contact_submissions table
+CREATE TABLE sessions (
+    session_id VARCHAR(128) PRIMARY KEY,
+    user_id VARCHAR(20) NOT NULL,
+    role_name VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+
 CREATE TABLE contact_submissions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -81,16 +72,3 @@ CREATE TABLE contact_submissions (
     query TEXT NOT NULL,
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
-CREATE TABLE sessions (
-    session_id VARCHAR(128) PRIMARY KEY,
-    -- Must be VARCHAR(20) to match the new Users table
-    user_id VARCHAR(20) NOT NULL,
-    -- We keep the role name here as a string for fast access in Node.js
-    role_name VARCHAR(20) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP NOT NULL,
-    -- Linking to the new Users table
-    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
-);
-
