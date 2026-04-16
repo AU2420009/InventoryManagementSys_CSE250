@@ -86,7 +86,7 @@ VALUES
 
 INSERT INTO Users (user_id, username, email, password_hash, role_id)
 VALUES
-('4', 'AU2420147', 'ankit97963@gmail.com', '380008', 2);
+('4', 'AU2420147', 'ankit97963@gmail.com', '380008', 2),
 ('5', 'AU2420148', 'prakash48204@gmail.com', '380008', 2), 
 ('6', 'AU2420149', 'ankit97563@gmail.com', '380008', 2), 
 ('7', 'AU2420150', 'ankit95663@gmail.com', '380008', 2);
