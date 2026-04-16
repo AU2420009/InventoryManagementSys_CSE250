@@ -4,5 +4,6 @@ import { createOrder, getCustomerOrders, deleteOrder } from "../controllers/orde
 const router = express.Router();
 
 router.post("/", createOrder);
+router.get("/customer/:customerId", getCustomerOrders);
 
 export default router;

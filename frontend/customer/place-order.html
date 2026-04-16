@@ -121,31 +121,72 @@ function logout() {
 }
 
 async function loadProducts() {
-    const res = await fetch('http://localhost:5000/products');
-    const products = await res.json();
-
-    const select = document.getElementById('productSelect');
-    products.forEach(p => {
-        select.innerHTML += `<option value="${p.id}">
-            ${p.name} (Stock: ${p.quantity}, ₹${p.price})
-        </option>`;
-    });
+    try {
+        const res = await fetch('http://localhost:5000/products');
+        
+        if (!res.ok) {
+            throw new Error('Failed to load products');
+        }
+        
+        const products = await res.json();
+        const select = document.getElementById('productSelect');
+        
+        products.forEach(p => {
+            select.innerHTML += `<option value="${p.Product_ID}">
+                ${p.Name} (Stock: ${p.Quantity_Available}, Rs${p.Price})
+            </option>`;
+        });
+    } catch (error) {
+        console.error('Error loading products:', error);
+        alert('Error loading products. Please try again.');
+    }
 }
 
 async function placeOrder() {
-    const product_id = document.getElementById('productSelect').value;
-    const quantity = document.getElementById('quantity').value;
-
-    await fetch('http://localhost:5000/orders', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + localStorage.getItem('sessionId')
-        },
-        body: JSON.stringify({ product_id, quantity })
-    });
-
-    alert('Order placed');
+    try {
+        const product_id = document.getElementById('productSelect').value;
+        const quantity = document.getElementById('quantity').value;
+        
+        if (!product_id || !quantity) {
+            alert('Please select a product and enter quantity');
+            return;
+        }
+        
+        // Get customer ID from session (you'll need to implement this)
+        const customerId = localStorage.getItem('customerId') || 1; // Fallback for testing
+        
+        const res = await fetch('http://localhost:5000/orders', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('sessionId')
+            },
+            body: JSON.stringify({ 
+                Customer_ID: parseInt(customerId),
+                items: [{
+                    Product_ID: parseInt(product_id),
+                    Quantity_Ordered: parseInt(quantity)
+                }]
+            })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+            alert('Order placed successfully!');
+            // Reset form
+            document.getElementById('productSelect').value = '';
+            document.getElementById('quantity').value = '';
+            // Reload products to update stock
+            document.getElementById('productSelect').innerHTML = '<option value="">-- Choose a product --</option>';
+            loadProducts();
+        } else {
+            alert(data.error || 'Failed to place order');
+        }
+    } catch (error) {
+        console.error('Error placing order:', error);
+        alert('Error placing order. Please try again.');
+    }
 }
 
 document.getElementById('logoutBtn').addEventListener('click', logout);

@@ -131,27 +131,58 @@ function logout() {
 }
 
 async function loadOrders() {
-    const res = await fetch('http://localhost:5000/orders', {
-        headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('sessionId')
+    try {
+        // Get customer ID from session (you'll need to implement this)
+        const customerId = localStorage.getItem('customerId') || 1; // Fallback for testing
+        
+        const res = await fetch(`http://localhost:5000/orders/customer/${customerId}`, {
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('sessionId')
+            }
+        });
+
+        if (!res.ok) {
+            throw new Error('Failed to load orders');
         }
-    });
 
-    const data = await res.json();
+        const orders = await res.json();
+        const table = document.getElementById('ordersTable');
+        table.innerHTML = '';
 
-    const table = document.getElementById('ordersTable');
-    table.innerHTML = '';
+        if (orders.length === 0) {
+            table.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem;">No orders found</td></tr>';
+            return;
+        }
 
-    data.forEach(o => {
-        table.innerHTML += `
-        <tr>
-            <td>${o.id}</td>
-            <td>${o.product_name}</td>
-            <td>${o.quantity}</td>
-            <td>${o.price}</td>
-            <td>${o.status}</td>
-        </tr>`;
-    });
+        // Display orders with their items
+        orders.forEach(order => {
+            if (order.items && order.items.length > 0) {
+                order.items.forEach((item, index) => {
+                    table.innerHTML += `
+                    <tr>
+                        <td>${order.Order_ID}${index > 0 ? '' : ''}</td>
+                        <td>${item.Name}</td>
+                        <td>${item.Quantity_Ordered}</td>
+                        <td>Rs ${item.Price_At_Order_Time}</td>
+                        <td>${order.Status}</td>
+                    </tr>`;
+                });
+            } else {
+                table.innerHTML += `
+                <tr>
+                    <td>${order.Order_ID}</td>
+                    <td>No items</td>
+                    <td>0</td>
+                    <td>Rs 0</td>
+                    <td>${order.Status}</td>
+                </tr>`;
+            }
+        });
+    } catch (error) {
+        console.error('Error loading orders:', error);
+        document.getElementById('ordersTable').innerHTML = 
+            '<tr><td colspan="5" style="text-align: center; color: red;">Error loading orders. Please try again.</td></tr>';
+    }
 }
 
 document.getElementById('logoutBtn').addEventListener('click', logout);

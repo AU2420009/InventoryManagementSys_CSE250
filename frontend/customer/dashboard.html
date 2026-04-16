@@ -178,17 +178,20 @@ function logout() {
 }
 
 async function loadDashboard() {
-    const res = await fetch('http://localhost:5000/orders', {
+    // Get customer ID from session (you'll need to implement this)
+    const customerId = localStorage.getItem('customerId') || 1; // Fallback for testing
+    
+    const res = await fetch(`http://localhost:5000/orders/customer/${customerId}`, {
         headers: {
             'Authorization': 'Bearer ' + localStorage.getItem('sessionId')
         }
     });
 
-    const data = await res.json();
+    const orders = await res.json();
 
-    let total = data.length;
-    let pending = data.filter(o => o.status === 'pending').length;
-    let completed = data.filter(o => o.status === 'completed').length;
+    let total = orders.length;
+    let pending = orders.filter(o => o.Status === 'Processing').length;
+    let completed = orders.filter(o => o.Status === 'Completed').length;
 
     document.getElementById('totalOrders').textContent = total;
     document.getElementById('pendingOrders').textContent = pending;
@@ -197,14 +200,39 @@ async function loadDashboard() {
     const table = document.getElementById('ordersTable');
     table.innerHTML = '';
 
-    data.slice(0, 5).forEach(o => {
+    // Flatten orders with items for display
+    let flatOrders = [];
+    orders.forEach(order => {
+        if (order.items && order.items.length > 0) {
+            order.items.forEach(item => {
+                flatOrders.push({
+                    Order_ID: order.Order_ID,
+                    Product_Name: item.Name,
+                    Quantity: item.Quantity_Ordered,
+                    Price: item.Price_At_Order_Time,
+                    Status: order.Status
+                });
+            });
+        } else {
+            // Show order even if no items
+            flatOrders.push({
+                Order_ID: order.Order_ID,
+                Product_Name: 'No items',
+                Quantity: 0,
+                Price: 0,
+                Status: order.Status
+            });
+        }
+    });
+
+    flatOrders.slice(0, 5).forEach(o => {
         table.innerHTML += `
         <tr>
-            <td>${o.id}</td>
-            <td>${o.product_name}</td>
-            <td>${o.quantity}</td>
-            <td>${o.price}</td>
-            <td>${o.status}</td>
+            <td>${o.Order_ID}</td>
+            <td>${o.Product_Name}</td>
+            <td>${o.Quantity}</td>
+            <td>Rs ${o.Price}</td>
+            <td>${o.Status}</td>
         </tr>`;
     });
 }

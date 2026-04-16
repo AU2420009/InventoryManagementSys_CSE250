@@ -99,19 +99,40 @@ export const getCustomerOrders = async (req, res) => {
   const { customerId } = req.params;
 
   try {
-    const [orders] = await db.query(
+    const queryResult = await db.query(
       `SELECT * FROM orders WHERE Customer_ID = ? ORDER BY Order_Date DESC`,
       [customerId]
     );
 
+    // Handle MariaDB query result format
+    let orders = [];
+    if (Array.isArray(queryResult) && Array.isArray(queryResult[0])) {
+        orders = queryResult[0]; 
+    } else if (Array.isArray(queryResult)) {
+        orders = queryResult; 
+    }
+
+    // Ensure orders is an array
+    if (!Array.isArray(orders)) {
+      orders = [];
+    }
+
     for (let order of orders) {
-      const [items] = await db.query(
+      const itemsResult = await db.query(
         `SELECT oi.Product_ID, p.Name, oi.Quantity_Ordered, oi.Price_At_Order_Time
         FROM order_items oi
         JOIN products p ON oi.Product_ID = p.Product_ID
         WHERE oi.Order_ID = ?`,
         [order.Order_ID]
       );
+
+      // Handle items result format
+      let items = [];
+      if (Array.isArray(itemsResult) && Array.isArray(itemsResult[0])) {
+          items = itemsResult[0]; 
+      } else if (Array.isArray(itemsResult)) {
+          items = itemsResult; 
+      }
 
       order.items = items;
     }

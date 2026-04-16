@@ -3,7 +3,16 @@ import db from "../db.js";
 // GET all products
 export const getProducts = async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM products");
+    const queryResult = await db.query("SELECT * FROM products");
+    
+    // Handle MariaDB query result format
+    let rows = [];
+    if (Array.isArray(queryResult) && Array.isArray(queryResult[0])) {
+        rows = queryResult[0]; 
+    } else if (Array.isArray(queryResult)) {
+        rows = queryResult; 
+    }
+
     res.json(rows);
   } catch (err) {
     console.error(err);
