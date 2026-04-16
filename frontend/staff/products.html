@@ -5,19 +5,34 @@
 <title>Products</title>
 
 <style>
-body { font-family: Inter; background:#f9fafb; margin:0; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-.navbar { display:flex; justify-content:space-between; padding:1rem 2rem; background:#fff; border-bottom:1px solid #eee; }
-.nav-links { display:flex; gap:2rem; }
-.nav-item { text-decoration:none; color:#4b5563; }
+body { font-family: 'Inter'; background:#f9fafb; margin:0; }
+
+.navbar {
+display:flex; justify-content:space-between; align-items:center;
+background:#fff; padding:0 2rem; height:64px; border-bottom:1px solid #e5e7eb;
+}
+
+.nav-links { display:flex; gap:2rem; height:100%; }
+
+.nav-item {
+text-decoration:none; color:#4b5563; display:flex; align-items:center;
+border-bottom:2px solid transparent;
+}
+
 .nav-item.active { color:#2563eb; border-bottom:2px solid #2563eb; }
 
-.main-content { padding:2rem; }
+.logout-btn {
+border:1px solid #d1d5db; padding:0.4rem 1rem;
+border-radius:6px; cursor:pointer; color:#dc2626;
+}
+
+.main-content { padding:2rem; max-width:1200px; margin:auto; }
 
 table { width:100%; border-collapse:collapse; }
-th,td { padding:0.8rem; border-bottom:1px solid #eee; }
 
-button { cursor:pointer; }
+th,td { padding:0.8rem; border-bottom:1px solid #eee; }
 </style>
 </head>
 
@@ -31,7 +46,7 @@ button { cursor:pointer; }
 <a href="orders.html" class="nav-item">Orders</a>
 <a href="customers.html" class="nav-item">Customers</a>
 </div>
-<button onclick="logout()">Logout</button>
+<button class="logout-btn" onclick="logout()">Logout</button>
 </nav>
 
 <main class="main-content">
@@ -48,28 +63,39 @@ button { cursor:pointer; }
 </main>
 
 <script>
-function checkAuth(){ if(localStorage.getItem('role')!=='staff') location='../login.html'; }
-function logout(){ localStorage.clear(); location='../login.html'; }
+function checkAuth(){
+if(localStorage.getItem('role')!=='staff'){
+window.location.href='../login.html';
+}
+}
+
+function logout(){
+localStorage.clear();
+window.location.href='../login.html';
+}
 
 async function load(){
-    const res = await fetch('http://localhost:5000/products');
-    const data = await res.json();
-    const t=document.getElementById('t'); t.innerHTML='';
+const res=await fetch('http://localhost:5000/products');
+const data=await res.json();
 
-    data.forEach(p=>{
-        t.innerHTML+=`<tr>
-        <td>${p.Product_ID}</td>
-        <td>${p.Name}</td>
-        <td>${p.Quantity}</td>
-        <td>${p.Price}</td>
-        <td><button onclick="del(${p.Product_ID})">Delete</button></td>
-        </tr>`;
-    });
+const t=document.getElementById('t');
+t.innerHTML='';
+
+data.forEach(p=>{
+t.innerHTML+=`
+<tr>
+<td>${p.id}</td>
+<td>${p.name}</td>
+<td>${p.quantity}</td>
+<td>${p.price}</td>
+<td><button onclick="del(${p.id})">Delete</button></td>
+</tr>`;
+});
 }
 
 async function del(id){
-    await fetch(`http://localhost:5000/products/${id}`,{method:'DELETE'});
-    load();
+await fetch(`http://localhost:5000/products/${id}`,{method:'DELETE'});
+load();
 }
 
 checkAuth();
