@@ -124,7 +124,7 @@
 
     <table>
         <thead>
-            <tr><th>ID</th><th>Product</th><th>Qty</th><th>Status</th><th>Action</th></tr>
+            <tr><th>ID</th><th>Items</th><th>Total Qty</th><th>Status</th><th>Action</th></tr>
         </thead>
         <tbody id="t"></tbody>
     </table>
@@ -144,22 +144,37 @@
     }
 
     async function load(){
-        const res=await fetch('http://localhost:5000/orders');
-        const data=await res.json();
-
         const t=document.getElementById('t');
         t.innerHTML='';
 
-        data.forEach(o=>{
-            t.innerHTML+=`
-            <tr>
-                <td>${o.id}</td>
-                <td>${o.product_name}</td>
-                <td>${o.quantity}</td>
-                <td>${o.status}</td>
-                <td><button onclick="del(${o.id})">Delete</button></td>
-            </tr>`;
-        });
+        try{
+            const res=await fetch('http://localhost:5000/orders');
+            if(!res.ok) throw new Error('Failed to load orders');
+            const data=await res.json();
+
+            const orders = Array.isArray(data) ? data : [];
+
+            orders.forEach(o=>{
+                const items = Array.isArray(o.items) ? o.items : [];
+                const itemsText = items.length
+                    ? items.map(i => `${i.Name} (x${i.Quantity_Ordered})`).join(', ')
+                    : '—';
+
+                const totalQty = items.reduce((sum,i)=>sum+(Number(i.Quantity_Ordered)||0),0);
+
+                t.innerHTML+=`
+                <tr>
+                    <td>${o.Order_ID ?? ''}</td>
+                    <td>${itemsText}</td>
+                    <td>${totalQty}</td>
+                    <td>${o.Status ?? o.status ?? ''}</td>
+                    <td><button onclick="del(${o.Order_ID})">Delete</button></td>
+                </tr>`;
+            });
+        }catch(e){
+            console.error(e);
+            t.innerHTML = '<tr><td colspan="5">Error loading orders</td></tr>';
+        }
     }
 
     async function del(id){

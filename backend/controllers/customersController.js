@@ -3,7 +3,15 @@ import db from "../db.js";
 // GET all customers
 export const getCustomers = async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM customers");
+    const queryResult = await db.query("SELECT * FROM customers");
+
+    let rows = [];
+    if (Array.isArray(queryResult) && Array.isArray(queryResult[0])) {
+      rows = queryResult[0];
+    } else if (Array.isArray(queryResult)) {
+      rows = queryResult;
+    }
+
     res.json(rows);
   } catch (err) {
     console.error(err);
@@ -16,14 +24,17 @@ export const createCustomer = async (req, res) => {
   try {
     const { Name, Phone } = req.body;
 
-    const [result] = await db.query(
+    const result = await db.query(
       "INSERT INTO customers (Name, Phone) VALUES (?, ?)",
       [Name, Phone]
     );
 
     res.json({
       message: "Customer created successfully",
-      customerId: result.insertId
+      customerId:
+        (typeof result?.insertId === "number" && result.insertId) ||
+        (Array.isArray(result) && result[0]?.insertId) ||
+        null
     });
 
   } catch (err) {
@@ -33,7 +44,7 @@ export const createCustomer = async (req, res) => {
 };
 
 export const deleteCustomer = async (req, res) => {
-  const { customerId } = req.params;
+  const customerId = req.params.customerId ?? req.params.id;
 
   const connection = await db.getConnection();
 
@@ -43,15 +54,15 @@ export const deleteCustomer = async (req, res) => {
     // 1. Cancel unfinished orders
     await connection.query(
       `UPDATE orders
-      SET status = 'Cancelled'
-      WHERE Customer_ID = ? AND status = 'Processing'`,
+      SET Status = 'Cancelled'
+      WHERE Customer_ID = ? AND Status = 'Processing'`,
       [customerId]
     );
 
     // 2. Delete cancelled + processing orders (optional)
     await connection.query(
       `DELETE FROM orders
-      WHERE Customer_ID = ? AND status != 'Completed'`,
+      WHERE Customer_ID = ? AND Status != 'Completed'`,
       [customerId]
     );
 

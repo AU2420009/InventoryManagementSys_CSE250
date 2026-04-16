@@ -124,7 +124,7 @@
 
     <table>
         <thead>
-            <tr><th>ID</th><th>Name</th><th>Email</th></tr>
+            <tr><th>ID</th><th>Name</th><th>Phone</th></tr>
         </thead>
         <tbody id="t"></tbody>
     </table>
@@ -150,12 +150,14 @@
         const t=document.getElementById('t');
         t.innerHTML='';
 
-        data.forEach(c=>{
+        const customers = Array.isArray(data) ? data : [];
+
+        customers.forEach(c=>{
             t.innerHTML+=`
             <tr>
-                <td>${c.id}</td>
-                <td>${c.name}</td>
-                <td>${c.email}</td>
+                <td>${c.Customer_ID ?? ''}</td>
+                <td>${c.Name ?? ''}</td>
+                <td>${c.Phone ?? ''}</td>
             </tr>`;
         });
     }

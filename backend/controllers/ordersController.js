@@ -20,6 +20,9 @@ export const createOrder = async (req, res) => {
   const connection = await db.getConnection();
 
   try {
+    if (!Customer_ID || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: "Customer_ID and items are required" });
+    }
 
     await connection.beginTransaction();
 
@@ -27,7 +30,7 @@ export const createOrder = async (req, res) => {
 
     for (let item of items) {
 
-      const [product] = await connection.query(
+      const product = await connection.query(
         "SELECT Price, Quantity_Available FROM products WHERE Product_ID=?",
         [item.Product_ID]
       );
@@ -46,16 +49,19 @@ export const createOrder = async (req, res) => {
       totalAmount += price * item.Quantity_Ordered;
     }
 
-    const [orderResult] = await connection.query(
-      "INSERT INTO orders (Customer_ID, Order_Date, Total_Amount, status) VALUES (?, CURDATE(), ?, 'Processing')",
+    const orderResult = await connection.query(
+      "INSERT INTO orders (Customer_ID, Order_Date, Total_Amount, Status) VALUES (?, CURDATE(), ?, 'Processing')",
       [Customer_ID, totalAmount]
     );
 
-    const orderId = orderResult.insertId;
+    const orderId = orderResult?.insertId ?? null;
+    if (!orderId) {
+      throw new Error("Failed to create order");
+    }
 
     for (let item of items) {
 
-      const [product] = await connection.query(
+      const product = await connection.query(
         "SELECT Price FROM products WHERE Product_ID=?",
         [item.Product_ID]
       );
@@ -146,7 +152,7 @@ export const getCustomerOrders = async (req, res) => {
 };
 
 export const deleteOrder = async (req, res) => {
-  const { orderId } = req.params;
+  const orderId = req.params.orderId ?? req.params.id;
 
   const connection = await db.getConnection();
 
@@ -154,7 +160,7 @@ export const deleteOrder = async (req, res) => {
     await connection.beginTransaction();
 
     // Get order items first
-    const [items] = await connection.query(
+    const items = await connection.query(
       "SELECT Product_ID, Quantity_Ordered FROM order_items WHERE Order_ID = ?",
       [orderId]
     );
@@ -188,5 +194,48 @@ export const deleteOrder = async (req, res) => {
 
   } finally {
     connection.release();
+  }
+};
+
+export const getAllOrders = async (req, res) => {
+  try {
+    const queryResult = await db.query(
+      "SELECT * FROM orders ORDER BY Order_Date DESC"
+    );
+
+    let orders = [];
+    if (Array.isArray(queryResult) && Array.isArray(queryResult[0])) {
+      orders = queryResult[0];
+    } else if (Array.isArray(queryResult)) {
+      orders = queryResult;
+    }
+
+    if (!Array.isArray(orders)) {
+      orders = [];
+    }
+
+    for (let order of orders) {
+      const itemsResult = await db.query(
+        `SELECT oi.Product_ID, p.Name, oi.Quantity_Ordered, oi.Price_At_Order_Time
+         FROM order_items oi
+         JOIN products p ON oi.Product_ID = p.Product_ID
+         WHERE oi.Order_ID = ?`,
+        [order.Order_ID]
+      );
+
+      let items = [];
+      if (Array.isArray(itemsResult) && Array.isArray(itemsResult[0])) {
+        items = itemsResult[0];
+      } else if (Array.isArray(itemsResult)) {
+        items = itemsResult;
+      }
+
+      order.items = items;
+    }
+
+    res.json(orders);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error fetching all orders");
   }
 };

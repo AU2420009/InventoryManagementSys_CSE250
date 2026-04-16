@@ -185,7 +185,7 @@ async function loadDashboard() {
         document.getElementById('customers').textContent = customers.length;
         
         // Count pending orders
-        const pendingOrders = orders.filter(order => order.Status === 'Processing').length;
+        const pendingOrders = orders.filter(order => (order.Status ?? order.status) === 'Processing').length;
         document.getElementById('pending').textContent = pendingOrders;
     } catch (error) {
         console.error('Error loading dashboard data:', error);
