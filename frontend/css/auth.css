@@ -180,11 +180,15 @@ input[type="password"]:focus {
     display: block;
     min-height: 16px;
 }
-
-/* Override margin for the input inside the captcha box */
 .captcha-box input {
     margin-bottom: 0;
-    background-color: #242435; /* Make it match the card */
+    background-color: #242435;
+    letter-spacing: normal; /* remove spacing by default */
+}
+
+/* Apply spacing ONLY when user starts typing */
+.captcha-box input:not(:placeholder-shown) {
+    letter-spacing: 6px;
 }
 
 /* ======== BUTTONS ======== */
