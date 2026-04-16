@@ -1,9 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customers - Hariram General Stores</title>
+    <title>{TITLE} - Hariram General Stores</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -92,15 +89,6 @@
             background: #f8fafc;
             font-weight: 600;
         }
-
-        .btn-danger {
-            background: #dc2626;
-            color: white;
-            border: none;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            cursor: pointer;
-        }
     </style>
 </head>
 
@@ -110,33 +98,19 @@
     <div class="navbar-brand">Hariram General Stores</div>
 
     <div class="nav-links">
-        <a href="dashboard.html" class="nav-item">Dashboard</a>
-        <a href="products.html" class="nav-item">Products</a>
-        <a href="orders.html" class="nav-item">Orders</a>
-        <a href="customers.html" class="nav-item active">Customers</a>
+        {NAVIGATION_LINKS}
     </div>
 
     <button id="logoutBtn" class="logout-btn">Logout</button>
 </nav>
 
 <main class="main-content">
-
-    <h1>Customers Management</h1>
-
-<input id="name" placeholder="Name">
-<input id="email" placeholder="Email">
-<button onclick="add()">Add</button>
-
-<table>
-<thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Action</th></tr></thead>
-<tbody id="t"></tbody>
-</table>
-
+    {CONTENT}
 </main>
 
 <script>
 function checkAuth() {
-    if (localStorage.getItem('role') !== 'admin') {
+    if (localStorage.getItem('role') !== '{ROLE}') {
         window.location.href = '../login.html';
     }
 }
@@ -146,43 +120,10 @@ function logout() {
     window.location.href = '../login.html';
 }
 
-async function load(){
-const res=await fetch('http://localhost:5000/customers');
-const data=await res.json();
-const t=document.getElementById('t'); t.innerHTML='';
-
-data.forEach(c=>{
-t.innerHTML+=`<tr>
-<td>${c.Customer_ID}</td>
-<td>${c.Name}</td>
-<td>${c.Email}</td>
-<td><button onclick="del(${c.Customer_ID})" class="btn-danger">Delete</button></td>
-</tr>`;
-});
-}
-
-async function add(){
-await fetch('http://localhost:5000/customers',{
-method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
-Name:document.getElementById('name').value,
-Email:document.getElementById('email').value
-})
-});
-load();
-}
-
-async function del(id){
-await fetch(`http://localhost:5000/customers/${id}`,{method:'DELETE'});
-load();
-}
+{SCRIPT_FUNCTIONS}
 
 document.getElementById('logoutBtn').addEventListener('click', logout);
 
 checkAuth();
-load();
+{INIT_CALL};
 </script>
-
-</body>
-</html>

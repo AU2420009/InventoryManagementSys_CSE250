@@ -1,62 +1,201 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Admin Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Hariram General Stores</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-body{font-family:Inter;background:#f9fafb;margin:0;}
-.navbar{display:flex;justify-content:space-between;padding:1rem 2rem;background:#fff;border-bottom:1px solid #e5e7eb;}
-.nav-links{display:flex;gap:2rem;}
-.nav-item{color:#4b5563;text-decoration:none;}
-.nav-item.active{color:#2563eb;border-bottom:2px solid #2563eb;}
-.main-content{padding:2rem;max-width:1200px;margin:auto;}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
-.card{background:#fff;padding:1.5rem;border:1px solid #e5e7eb;border-radius:8px;}
-</style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
+            color: #1f2937;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #ffffff;
+            padding: 0 2rem;
+            height: 64px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .navbar-brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            height: 100%;
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: #4b5563;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .nav-item.active {
+            color: #2563eb;
+            border-bottom: 2px solid #2563eb;
+        }
+
+        .nav-item:hover {
+            color: #111827;
+        }
+
+        .logout-btn {
+            background-color: transparent;
+            border: 1px solid #d1d5db;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #dc2626;
+        }
+
+        .main-content {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: #ffffff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            border-left: 4px solid;
+        }
+
+        .card-blue { border-left-color: #3b82f6; }
+        .card-yellow { border-left-color: #f59e0b; }
+        .card-green { border-left-color: #10b981; }
+        .card-purple { border-left-color: #8b5cf6; }
+
+        .stat-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #6b7280;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.8rem;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
 </head>
 
 <body>
 
 <nav class="navbar">
-<div>Hariram General Stores</div>
-<div class="nav-links">
-<a href="dashboard.html" class="nav-item active">Dashboard</a>
-<a href="products.html" class="nav-item">Products</a>
-<a href="orders.html" class="nav-item">Orders</a>
-<a href="customers.html" class="nav-item">Customers</a>
-</div>
-<button onclick="logout()">Logout</button>
+    <div class="navbar-brand">Hariram General Stores</div>
+
+    <div class="nav-links">
+        <a href="dashboard.html" class="nav-item active">Dashboard</a>
+        <a href="products.html" class="nav-item">Products</a>
+        <a href="orders.html" class="nav-item">Orders</a>
+        <a href="customers.html" class="nav-item">Customers</a>
+    </div>
+
+    <button id="logoutBtn" class="logout-btn">Logout</button>
 </nav>
 
 <main class="main-content">
-<h1>Admin Dashboard</h1>
 
-<div class="stats">
-<div class="card">Products: <span id="p">0</span></div>
-<div class="card">Orders: <span id="o">0</span></div>
-<div class="card">Customers: <span id="c">0</span></div>
-</div>
+    <h1>Admin Dashboard</h1>
+
+    <div class="stats-grid">
+        <div class="stat-card card-blue">
+            <div class="stat-title">Total Products</div>
+            <div class="stat-value" id="products">0</div>
+        </div>
+        <div class="stat-card card-yellow">
+            <div class="stat-title">Total Orders</div>
+            <div class="stat-value" id="orders">0</div>
+        </div>
+        <div class="stat-card card-green">
+            <div class="stat-title">Total Customers</div>
+            <div class="stat-value" id="customers">0</div>
+        </div>
+        <div class="stat-card card-purple">
+            <div class="stat-title">Revenue</div>
+            <div class="stat-value" id="revenue">0</div>
+        </div>
+    </div>
+
 </main>
 
 <script>
-function checkAuth(){ if(localStorage.getItem('role')!=='admin') location='../login.html'; }
-function logout(){ localStorage.clear(); location='../login.html'; }
-
-async function load(){
-const [p,o,c]=await Promise.all([
-fetch('http://localhost:5000/products'),
-fetch('http://localhost:5000/orders'),
-fetch('http://localhost:5000/customers')
-]);
-
-document.getElementById('p').textContent=(await p.json()).length;
-document.getElementById('o').textContent=(await o.json()).length;
-document.getElementById('c').textContent=(await c.json()).length;
+function checkAuth() {
+    if (localStorage.getItem('role') !== 'admin') {
+        window.location.href = '../login.html';
+    }
 }
 
-checkAuth(); load();
+function logout() {
+    localStorage.clear();
+    window.location.href = '../login.html';
+}
+
+async function loadDashboard() {
+    try {
+        const [productsRes, ordersRes, customersRes] = await Promise.all([
+            fetch('http://localhost:5000/products'),
+            fetch('http://localhost:5000/orders'),
+            fetch('http://localhost:5000/customers')
+        ]);
+
+        const products = await productsRes.json();
+        const orders = await ordersRes.json();
+        const customers = await customersRes.json();
+
+        document.getElementById('products').textContent = products.length;
+        document.getElementById('orders').textContent = orders.length;
+        document.getElementById('customers').textContent = customers.length;
+        
+        // Calculate revenue (sum of all order totals)
+        const revenue = orders.reduce((total, order) => total + (order.Total_Amount || 0), 0);
+        document.getElementById('revenue').textContent = `Rs ${revenue.toLocaleString()}`;
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
+    }
+}
+
+document.getElementById('logoutBtn').addEventListener('click', logout);
+
+checkAuth();
+loadDashboard();
 </script>
 
 </body>

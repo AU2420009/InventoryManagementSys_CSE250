@@ -1,94 +1,176 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Orders</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders - Hariram General Stores</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
+            color: #1f2937;
+        }
 
-body{font-family:'Inter';background:#f9fafb;margin:0;}
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #ffffff;
+            padding: 0 2rem;
+            height: 64px;
+            border-bottom: 1px solid #e5e7eb;
+        }
 
-.navbar{display:flex;justify-content:space-between;align-items:center;
-background:#fff;padding:0 2rem;height:64px;border-bottom:1px solid #e5e7eb;}
+        .navbar-brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #111827;
+        }
 
-.nav-links{display:flex;gap:2rem;height:100%;}
-.nav-item{color:#4b5563;text-decoration:none;display:flex;align-items:center;border-bottom:2px solid transparent;}
-.nav-item.active{color:#2563eb;border-bottom:2px solid #2563eb;}
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            height: 100%;
+        }
 
-.logout-btn{border:1px solid #d1d5db;padding:0.4rem 1rem;border-radius:6px;color:#dc2626;}
+        .nav-item {
+            text-decoration: none;
+            color: #4b5563;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
 
-.main-content{padding:2rem;max-width:1200px;margin:auto;}
+        .nav-item.active {
+            color: #2563eb;
+            border-bottom: 2px solid #2563eb;
+        }
 
-table{width:100%;border-collapse:collapse;}
-th,td{padding:0.8rem;border-bottom:1px solid #eee;}
-</style>
+        .nav-item:hover {
+            color: #111827;
+        }
+
+        .logout-btn {
+            background-color: transparent;
+            border: 1px solid #d1d5db;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #dc2626;
+        }
+
+        .main-content {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 0.8rem;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+        }
+
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
 
 <nav class="navbar">
-<div>Hariram General Stores</div>
-<div class="nav-links">
-<a href="dashboard.html" class="nav-item">Dashboard</a>
-<a href="products.html" class="nav-item">Products</a>
-<a href="orders.html" class="nav-item active">Orders</a>
-<a href="customers.html" class="nav-item">Customers</a>
-</div>
-<button class="logout-btn" onclick="logout()">Logout</button>
+    <div class="navbar-brand">Hariram General Stores</div>
+
+    <div class="nav-links">
+        <a href="dashboard.html" class="nav-item">Dashboard</a>
+        <a href="products.html" class="nav-item">Products</a>
+        <a href="orders.html" class="nav-item active">Orders</a>
+        <a href="customers.html" class="nav-item">Customers</a>
+    </div>
+
+    <button id="logoutBtn" class="logout-btn">Logout</button>
 </nav>
 
 <main class="main-content">
+    <h1>Orders Management</h1>
 
-<h1>Orders</h1>
-
-<table>
-<thead>
-<tr><th>ID</th><th>Product</th><th>Qty</th><th>Status</th><th>Action</th></tr>
-</thead>
-<tbody id="t"></tbody>
-</table>
+    <table>
+        <thead>
+            <tr><th>ID</th><th>Product</th><th>Qty</th><th>Status</th><th>Action</th></tr>
+        </thead>
+        <tbody id="t"></tbody>
+    </table>
 
 </main>
 
 <script>
-function checkAuth(){
-if(localStorage.getItem('role')!=='staff'){
-window.location.href='../login.html';
-}
-}
+    function checkAuth() {
+        if (localStorage.getItem('role') !== 'staff') {
+            window.location.href = '../login.html';
+        }
+    }
 
-function logout(){
-localStorage.clear();
-window.location.href='../login.html';
-}
+    function logout() {
+        localStorage.clear();
+        window.location.href = '../login.html';
+    }
 
-async function load(){
-const res=await fetch('http://localhost:5000/orders');
-const data=await res.json();
+    async function load(){
+        const res=await fetch('http://localhost:5000/orders');
+        const data=await res.json();
 
-const t=document.getElementById('t');
-t.innerHTML='';
+        const t=document.getElementById('t');
+        t.innerHTML='';
 
-data.forEach(o=>{
-t.innerHTML+=`
-<tr>
-<td>${o.id}</td>
-<td>${o.product_name}</td>
-<td>${o.quantity}</td>
-<td>${o.status}</td>
-<td><button onclick="del(${o.id})">Delete</button></td>
-</tr>`;
-});
-}
+        data.forEach(o=>{
+            t.innerHTML+=`
+            <tr>
+                <td>${o.id}</td>
+                <td>${o.product_name}</td>
+                <td>${o.quantity}</td>
+                <td>${o.status}</td>
+                <td><button onclick="del(${o.id})">Delete</button></td>
+            </tr>`;
+        });
+    }
 
-async function del(id){
-await fetch(`http://localhost:5000/orders/${id}`,{method:'DELETE'});
-load();
-}
+    async function del(id){
+        await fetch(`http://localhost:5000/orders/${id}`,{method:'DELETE'});
+        load();
+    }
 
-checkAuth();
-load();
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+
+    checkAuth();
+    load();
 </script>
 
 </body>
