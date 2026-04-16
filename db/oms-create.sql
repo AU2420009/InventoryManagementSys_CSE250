@@ -97,3 +97,4 @@ VALUES
 INSERT INTO Users (user_id, username, email, password_hash, role_id)
 VALUES
 ('8', 'AU2420151', 'hariramgeneralstores@gmail.com', '380009', 3);
+
