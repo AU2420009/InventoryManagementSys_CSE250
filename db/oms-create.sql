@@ -52,13 +52,16 @@ CREATE TABLE users (
 
 CREATE TABLE sessions (
     session_id VARCHAR(128) PRIMARY KEY,
-    user_id INT NOT NULL,
-    role ENUM('admin', 'staff', 'customer') NOT NULL,
+    -- Must be VARCHAR(20) to match the new Users table
+    user_id VARCHAR(20) NOT NULL, 
+    -- We keep the role name here as a string for fast access in Node.js
+    role_name VARCHAR(20) NOT NULL, 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     expires_at TIMESTAMP NOT NULL,
-    -- Added ON DELETE CASCADE for better cleanup
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+    -- Linking to the new Users table
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
 );
+
 
 --For login
 CREATE TABLE roles (
