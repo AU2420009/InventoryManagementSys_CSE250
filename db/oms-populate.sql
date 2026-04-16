@@ -40,4 +40,22 @@ VALUES
 (3, 2, 50, 25)
 ;
 
+INSERT INTO Users (user_id, username, email, password_hash, role_id)
+VALUES
+('1', 'AU24220001', 'ankit.k@ahduni.edu.in', '380007', 1),
+('2', 'AU24220002', 'milan.s@ahduni.edu.in', '380007', 1),
+('3', 'AU24220003', 'anant.in@ahduni.edu.in', '380007', 1);
+
+INSERT INTO Users (user_id, username, email, password_hash, role_id)
+VALUES
+('4', 'AU2420147', 'ankit97963@gmail.com', '380008', 2),
+('5', 'AU2420148', 'prakash48204@gmail.com', '380008', 2),
+('6', 'AU2420149', 'ankit97563@gmail.com', '380008', 2),
+('7', 'AU2420150', 'ankit95663@gmail.com', '380008', 2);
+
+INSERT INTO Users (user_id, username, email, password_hash, role_id)
+VALUES
+('8', 'AU2420151', 'hariramgeneralstores@gmail.com', '380009', 3);
+
+
 COMMIT;
