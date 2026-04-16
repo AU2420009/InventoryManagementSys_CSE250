@@ -1,22 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Place Order</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Place Order - Hariram General Stores</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
+            color: #1f2937;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #ffffff;
+            padding: 0 2rem;
+            height: 64px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .navbar-brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            height: 100%;
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: #4b5563;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .nav-item.active {
+            color: #2563eb;
+            border-bottom: 2px solid #2563eb;
+        }
+
+        .nav-item:hover {
+            color: #111827;
+        }
+
+        .logout-btn {
+            background-color: transparent;
+            border: 1px solid #d1d5db;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #dc2626;
+        }
+
+        .main-content {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.8rem;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
 </head>
 <body>
 
-<h1>Place Order</h1>
+<nav class="navbar">
+    <div class="navbar-brand">Hariram General Stores</div>
 
-<select id="productSelect"></select>
-<input type="number" id="quantity" placeholder="Quantity">
-<button onclick="placeOrder()">Submit</button>
+    <div class="nav-links">
+        <a href="dashboard.html" class="nav-item">Dashboard</a>
+        <a href="orders.html" class="nav-item">My Orders</a>
+        <a href="place-order.html" class="nav-item active">Place Order</a>
+    </div>
+
+    <button id="logoutBtn" class="logout-btn">Logout</button>
+</nav>
+
+<main class="main-content">
+
+    <h1>Place Order</h1>
+
+    <select id="productSelect"></select>
+    <input type="number" id="quantity" placeholder="Quantity">
+    <button onclick="placeOrder()">Submit</button>
+
+</main>
 
 <script>
 function checkAuth() {
     if (localStorage.getItem('role') !== 'customer') {
         window.location.href = '../login.html';
     }
+}
+
+function logout() {
+    localStorage.clear();
+    window.location.href = '../login.html';
 }
 
 async function loadProducts() {
@@ -46,6 +147,8 @@ async function placeOrder() {
 
     alert('Order placed');
 }
+
+document.getElementById('logoutBtn').addEventListener('click', logout);
 
 checkAuth();
 loadProducts();
