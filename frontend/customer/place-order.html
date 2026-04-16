@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Place Order</title>
+</head>
+<body>
+
+<h1>Place Order</h1>
+
+<select id="productSelect"></select>
+<input type="number" id="quantity" placeholder="Quantity">
+<button onclick="placeOrder()">Submit</button>
+
+<script>
+function checkAuth() {
+    if (localStorage.getItem('role') !== 'customer') {
+        window.location.href = '../login.html';
+    }
+}
+
+async function loadProducts() {
+    const res = await fetch('/products');
+    const products = await res.json();
+
+    const select = document.getElementById('productSelect');
+    products.forEach(p => {
+        select.innerHTML += `<option value="${p.id}">
+            ${p.name} (Stock: ${p.quantity}, ₹${p.price})
+        </option>`;
+    });
+}
+
+async function placeOrder() {
+    const product_id = document.getElementById('productSelect').value;
+    const quantity = document.getElementById('quantity').value;
+
+    await fetch('/orders', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('sessionId')
+        },
+        body: JSON.stringify({ product_id, quantity })
+    });
+
+    alert('Order placed');
+}
+
+checkAuth();
+loadProducts();
+</script>
+
+</body>
+</html>
