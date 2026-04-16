@@ -13,7 +13,6 @@ VALUES
 (5, 'Butter 500g',20,22000),
 (6, 'Atta 2Kg',92,23000)
 ;
-
 INSERT INTO customers (Customer_ID, Name, Phone)
 VALUES
 (1, 'Ankit Kumar', '0123456789'),
