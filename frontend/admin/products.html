@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Products</title>
+
+<style>
+body{font-family:Inter;background:#f9fafb;margin:0;}
+.navbar{display:flex;justify-content:space-between;padding:1rem 2rem;background:#fff;border-bottom:1px solid #eee;}
+.nav-links{display:flex;gap:2rem;}
+.nav-item{color:#4b5563;text-decoration:none;}
+.nav-item.active{color:#2563eb;border-bottom:2px solid #2563eb;}
+.main-content{padding:2rem;}
+table{width:100%;border-collapse:collapse;}
+th,td{padding:0.8rem;border-bottom:1px solid #eee;}
+</style>
+</head>
+
+<body>
+
+<nav class="navbar">
+<div>Hariram General Stores</div>
+<div class="nav-links">
+<a href="dashboard.html" class="nav-item">Dashboard</a>
+<a href="products.html" class="nav-item active">Products</a>
+<a href="orders.html" class="nav-item">Orders</a>
+<a href="customers.html" class="nav-item">Customers</a>
+</div>
+<button onclick="logout()">Logout</button>
+</nav>
+
+<main class="main-content">
+
+<h1>Products</h1>
+
+<input id="name" placeholder="Name">
+<input id="qty" placeholder="Qty">
+<input id="price" placeholder="Price">
+<button onclick="add()">Add</button>
+
+<table>
+<thead><tr><th>ID</th><th>Name</th><th>Qty</th><th>Price</th><th>Actions</th></tr></thead>
+<tbody id="t"></tbody>
+</table>
+
+</main>
+
+<script>
+function checkAuth(){ if(localStorage.getItem('role')!=='admin') location='../login.html'; }
+function logout(){ localStorage.clear(); location='../login.html'; }
+
+async function load(){
+const res=await fetch('http://localhost:5000/products');
+const data=await res.json();
+const t=document.getElementById('t'); t.innerHTML='';
+
+data.forEach(p=>{
+t.innerHTML+=`<tr>
+<td>${p.Product_ID}</td>
+<td>${p.Name}</td>
+<td>${p.Quantity}</td>
+<td>${p.Price}</td>
+<td>
+<button onclick="del(${p.Product_ID})">Delete</button>
+</td>
+</tr>`;
+});
+}
+
+async function add(){
+await fetch('http://localhost:5000/products',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+Name:document.getElementById('name').value,
+Quantity:document.getElementById('qty').value,
+Price:document.getElementById('price').value
+})
+});
+load();
+}
+
+async function del(id){
+await fetch(`http://localhost:5000/products/${id}`,{method:'DELETE'});
+load();
+}
+
+checkAuth(); load();
+</script>
+
+</body>
+</html>
