@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // --- DOM Elements ---
+  // --- DOM Elements (Preserved Perfectly) ---
   const loginForm = document.getElementById("loginForm");
   const captchaCanvas = document.getElementById("captchaCanvas");
   const captchaInput = document.getElementById("captchaInput");
@@ -9,42 +9,98 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentCaptcha = "";
 
   // ==========================================
-  // 0. CUSTOM POPUP UI LOGIC
+  // 0. NEW POPUP UI LOGIC (REPLACED EMOJIS WITH GRAPHIC INSPIRED BY SCREENSHOT)
   // ==========================================
   function showPopup(message, type) {
-    // Remove existing popup if one is already open
+    // 0a. Define Dynamic CSS for the complex icon graphics (Do this once)
+    if (!document.getElementById('custom-popup-styles')) {
+      const styles = document.createElement('style');
+      styles.id = 'custom-popup-styles';
+      styles.innerHTML = `
+        /* Central Spinner Animation */
+        @keyframes popup-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Central Spinner style (mimicking dotted ring in screenshot, color based on success/error) */
+        .popup-spinner {
+          width: 60px; height: 60px; border-radius: 50%;
+          border-width: 5px; border-style: dotted;
+          position: relative; animation: popup-spin 1.5s linear infinite;
+        }
+
+        /* Floating background shapes mimicking screenshot (stars, rings, dots) */
+        .popup-icon-container::before, .popup-icon-container::after {
+          content: ''; position: absolute; border-radius: 50%; opacity: 0.8;
+        }
+
+        /* Shape 1 (like the yellow sun/star) */
+        .popup-icon-container::before {
+          width: 15px; height: 15px; background: #f59e0b; top: 10px; left: 10px;
+        }
+        
+        /* Shape 2 (like the blue dot/face) */
+        .popup-icon-container::after {
+          width: 12px; height: 12px; background: #3b82f6; bottom: 10px; right: 10px;
+        }
+
+        /* Shape 3 (like the purple ring) */
+        .popup-shape-3 {
+          width: 20px; height: 20px; border: 3px solid #a855f7; border-radius: 50%;
+          position: absolute; top: 5px; right: 20px; opacity: 0.8;
+        }
+      `;
+      document.head.appendChild(styles);
+    }
+
+    // 0b. Popup Structure
     const existing = document.getElementById('custom-popup-overlay');
     if (existing) existing.remove();
 
-    // Create the dark overlay background
     const overlay = document.createElement('div');
     overlay.id = 'custom-popup-overlay';
     Object.assign(overlay.style, {
       position: 'fixed', top: '0', left: '0', width: '100%', height: '100%',
       backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', 
       justifyContent: 'center', alignItems: 'center', zIndex: '9999',
-      backdropFilter: 'blur(2px)' // gives a nice modern blur effect
+      backdropFilter: 'blur(2px)'
     });
 
-    // Create the central white box
     const box = document.createElement('div');
     Object.assign(box.style, {
       backgroundColor: '#fff', padding: '30px 40px', borderRadius: '12px',
       boxShadow: '0 10px 25px rgba(0,0,0,0.2)', textAlign: 'center',
-      minWidth: '300px', maxWidth: '80%', fontFamily: 'sans-serif'
+      minWidth: '320px', maxWidth: '80%', fontFamily: 'sans-serif'
     });
 
-    // Create the Icon (✅ for success, ❌ for error)
-    const icon = document.createElement('div');
-    icon.innerHTML = type === 'success' ? '✅' : '❌';
-    Object.assign(icon.style, { fontSize: '45px', marginBottom: '15px' });
+    // =========================================================================
+    // ✅ REPLACED EMOJI WITH DYNAMIC GRAPHIC STRUCTURE MIMICKING SCREENSHOT
+    // =========================================================================
+    const iconContainer = document.createElement('div');
+    iconContainer.className = `popup-icon-container ${type}`;
+    Object.assign(iconContainer.style, {
+      width: '100px', height: '100px', position: 'relative', margin: '0 auto 20px',
+      display: 'flex', justifyContent: 'center', alignItems: 'center'
+    });
 
-    // Create the Text Message
+    // The central spinner (dotted ring in screenshot style, colored green/red based on success/error)
+    const spinner = document.createElement('div');
+    spinner.className = 'popup-spinner';
+    Object.assign(spinner.style, {
+      borderColor: type === 'success' ? '#22c55e' : '#ef4444' // Map color to result
+    });
+
+    // A third floating shape element to add complexity like screenshot background
+    const shape3 = document.createElement('div');
+    shape3.className = 'popup-shape-3';
+
+    // Assemble complex icon
+    iconContainer.appendChild(spinner);
+    iconContainer.appendChild(shape3);
+    // =========================================================================
+
     const text = document.createElement('p');
     text.textContent = message;
     Object.assign(text.style, { fontSize: '18px', color: '#333', marginBottom: '25px', margin: '0 0 20px 0' });
 
-    // Create the OK/Close button
     const btn = document.createElement('button');
     btn.textContent = 'OK';
     Object.assign(btn.style, {
@@ -54,25 +110,21 @@ document.addEventListener("DOMContentLoaded", () => {
       transition: 'opacity 0.2s'
     });
     
-    // Add hover effect
     btn.onmouseover = () => btn.style.opacity = '0.8';
     btn.onmouseout = () => btn.style.opacity = '1';
-    
-    // Close logic
     btn.onclick = () => overlay.remove();
 
-    // Assemble and inject into the page
-    box.appendChild(icon);
+    box.appendChild(iconContainer); // Add the new dynamic icon structure
     box.appendChild(text);
     if (type === 'error') {
-      box.appendChild(btn); // Only show OK button for errors, let success auto-redirect
+      box.appendChild(btn); 
     }
     overlay.appendChild(box);
     document.body.appendChild(overlay);
   }
 
   // ==========================================
-  // 1. CAPTCHA GENERATOR LOGIC
+  // 1. CAPTCHA GENERATOR LOGIC (Preserved Perfectly)
   // ==========================================
   function generateCaptcha() {
     if (!captchaCanvas) return;
@@ -119,7 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Initialize CAPTCHA when page loads
+  // Initialize CAPTCHA when page loads (Preserved Perfectly)
   if (captchaCanvas) {
     generateCaptcha();
     // Refresh CAPTCHA when the button is clicked
@@ -127,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==========================================
-  // 2. LOGIN SUBMISSION & VALIDATION LOGIC
+  // 2. LOGIN SUBMISSION & VALIDATION LOGIC (Preserved Perfectly, utilizing custom popup calls)
   // ==========================================
   if (loginForm) {
     loginForm.addEventListener("submit", (e) => {
@@ -158,14 +210,14 @@ document.addEventListener("DOMContentLoaded", () => {
       .then(response => response.json())
       .then(data => {
         if (data.error) {
-          // ❌ REPLACED ALERT WITH CUSTOM POPUP
+          // Use custom 'error' graphic popup
           showPopup("Security Alert: " + data.error, "error");
           
           // If login fails, force them to do a new CAPTCHA
           captchaInput.value = "";
           generateCaptcha(); 
         } else {
-          // ✅ REPLACED ALERT WITH CUSTOM POPUP
+          // Use custom 'success' graphic popup
           showPopup("Authentication successful. Redirecting...", "success");
           
           localStorage.setItem("sessionId", data.sessionId);
@@ -192,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .catch(error => {
         console.error("Error connecting to server:", error);
-        // ❌ REPLACED ALERT WITH CUSTOM POPUP
+        // Use custom 'error' graphic popup
         showPopup("Failed to connect to the backend. Is your Node server running?", "error");
       });
     });
