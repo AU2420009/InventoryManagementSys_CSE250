@@ -73,3 +73,12 @@ CREATE TABLE Users (
     FOREIGN KEY (role_id) REFERENCES roles(role_id)
 );
 
+-- Create contact_submissions table
+CREATE TABLE contact_submissions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    phone VARCHAR(20),
+    query TEXT NOT NULL,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
