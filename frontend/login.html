@@ -12,7 +12,7 @@
 
   <div class="left-panel">
     <div class="overlay">
-      <h1>HARIRAM GENERAL STORES</h1>
+      <h1 class="interactive-title" onclick="goToHomePage()">HARIRAM GENERAL STORES</h1>
     </div>
   </div>
 
@@ -20,7 +20,7 @@
     <div class="form-box">
       <img src="css/Logo1.avif" alt="Logo" class="auth-logo" onerror="this.style.display='none'">
       
-      <h2 id="formTitle">HARIRAM GENERAL STORES</h2>
+      <h2 id="formTitle" class="interactive-title" onclick="goToHomePage()">HARIRAM GENERAL STORES</h2>
 
       <form id="loginForm">
         <input type="text" id="loginIdentifier" placeholder="Username or Email" required>
@@ -64,6 +64,11 @@
 
 </div>
 
+<script>
+function goToHomePage() {
+    window.location.href = 'index.html';
+}
+</script>
 <script src="js/auth.js"></script>
 </body>
 </html>
