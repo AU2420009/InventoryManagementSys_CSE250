@@ -186,9 +186,10 @@
 
     <div class="nav-links">
         <a href="#" class="nav-item active">Dashboard</a>
-        <a href="#" class="nav-item">Inventory Logs</a>
-        <a href="#" class="nav-item">Security Alerts</a>
-        <a href="#" class="nav-item">Access Control</a>
+        <a href="#" class="nav-item">Products</a>
+        <a href="#" class="nav-item">Orders</a>
+        <a href="#" class="nav-item">Customers</a>
+        <a href="#" class="nav-item">Users</a>
         <a href="#" class="nav-item">Reports</a>
     </div>
 
@@ -198,58 +199,66 @@
 <main class="main-content">
 
     <div class="page-header">
-        <h1 id="welcomeMessage">Security Dashboard</h1>
-        <p>System overview and recent activity logs.</p>
+        <h1 id="welcomeMessage">Admin Dashboard</h1>
+        <p>Complete system management and oversight.</p>
     </div>
 
     <div class="stats-grid">
         <div class="stat-card card-blue">
-            <div class="stat-title">Total Items Tracked</div>
-            <div class="stat-value">1,204</div>
+            <div class="stat-title">Total Products</div>
+            <div class="stat-value">847</div>
         </div>
         <div class="stat-card card-yellow">
-            <div class="stat-title">Active Security Alerts</div>
-            <div class="stat-value">4</div>
+            <div class="stat-title">Total Orders</div>
+            <div class="stat-value">1,204</div>
         </div>
         <div class="stat-card card-green">
-            <div class="stat-title">Resolved Today</div>
-            <div class="stat-value">12</div>
+            <div class="stat-title">Active Customers</div>
+            <div class="stat-value">156</div>
         </div>
         <div class="stat-card card-purple">
-            <div class="stat-title">System Uptime (HRS)</div>
-            <div class="stat-value">99.9</div>
+            <div class="stat-title">Total Users</div>
+            <div class="stat-value">12</div>
         </div>
     </div>
 
     <div class="table-container">
-        <h3>Recent Security Log Book</h3>
+        <h3>Recent Orders</h3>
         <table>
             <thead>
             <tr>
                 <th>DATE</th>
-                <th>SUBJECT</th>
-                <th>ITEM / MACHINE</th>
-                <th>USER</th>
-                <th>ACTION TYPE</th>
+                <th>ORDER ID</th>
+                <th>CUSTOMER</th>
+                <th>PRODUCTS</th>
+                <th>TOTAL</th>
                 <th>STATUS</th>
             </tr>
             </thead>
             <tbody>
             <tr>
                 <td>2026-03-24</td>
-                <td>Unauthorized Access Attempt</td>
-                <td>Server Rack A</td>
-                <td>Unknown</td>
-                <td>Lockdown</td>
-                <td><span class="status-badge">High Alert</span></td>
+                <td>#ORD-2024-0847</td>
+                <td>Tech Solutions Inc.</td>
+                <td>5 items</td>
+                <td>$1,247.50</td>
+                <td><span class="status-badge">Processing</span></td>
             </tr>
             <tr>
                 <td>2026-03-23</td>
-                <td>Item Checked Out</td>
-                <td>Samsung Monitor 15"</td>
-                <td>Ankit</td>
-                <td>Standard Issue</td>
-                <td><span style="color: #10b981; font-size: 0.8rem; font-weight: 500;">Cleared</span></td>
+                <td>#ORD-2024-0846</td>
+                <td>Global Enterprises</td>
+                <td>3 items</td>
+                <td>$856.25</td>
+                <td><span style="color: #10b981; font-size: 0.8rem; font-weight: 500;">Completed</span></td>
+            </tr>
+            <tr>
+                <td>2026-03-23</td>
+                <td>#ORD-2024-0845</td>
+                <td>StartUp Labs</td>
+                <td>8 items</td>
+                <td>$2,134.00</td>
+                <td><span style="color: #10b981; font-size: 0.8rem; font-weight: 500;">Shipped</span></td>
             </tr>
             </tbody>
         </table>
